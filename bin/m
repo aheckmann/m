@@ -1,0 +1,330 @@
+#!/usr/bin/env sh
+
+# download mongo version if not installed
+#   untar to separate directory
+# swich to requested version (swap the symlinks)
+
+M_PREFIX=${M_PREFIX-/usr/local}
+VERSIONS_DIR=$M_PREFIX/m/versions
+
+# m version
+VERSION="0.0.0"
+
+#
+# Log the given <msg ...>
+#
+
+log() {
+  printf "\033[90m...\033[0m $@\n"
+}
+
+#
+# Exit with the given <msg ...>
+#
+
+abort() {
+  printf "\033[31mError: $@\033[0m\n" && exit 1
+}
+
+# setup
+
+test -d $VERSIONS_DIR || mkdir -p $VERSIONS_DIR
+
+if ! test -d $VERSIONS_DIR; then
+  abort "Failed to create versions directory ($VERSIONS_DIR), do you have permissions to do this?"
+fi
+
+# curl / wget support
+
+GET=
+
+# wget support (Added --no-check-certificate for Github downloads)
+which wget > /dev/null && GET="wget -q -O-"
+
+# curl support
+which curl > /dev/null && GET="curl -# -L"
+
+# Ensure we have curl or wget
+
+test -z "$GET" && abort "curl or wget required"
+
+#
+# Output usage information.
+#
+
+display_help() {
+  cat <<-help
+
+  Usage: m [options] [COMMAND] [config]
+
+  Commands:
+
+    m                            Output versions installed
+    m latest [config ...]        Install or activate the latest mongodb release
+    m stable [config ...]        Install or activate the latest stable mongodb release
+    m <version> [config ...]     Install and/or use mongodb <version>
+    m custom <version> <tarball> [config ...]  Install custom mongodb <tarball> with [args ...]
+    m use <version> [args ...]   Execute mongodb <version> with [args ...]
+    m bin <version>              Output bin path for <version>
+    m rm <version ...>           Remove the given version(s)
+    m --latest                   Output the latest mongodb version available
+    m --stable                   Output the latest stable mongodb version available
+    m ls                         Output the versions of mongodb available
+
+  Options:
+
+    -V, --version   Output current version of m
+    -h, --help      Display help information
+
+  Aliases:
+
+    -       rm
+    which   bin
+    use     as
+    list    ls
+    custom  c
+
+help
+  exit 0
+}
+
+#
+# Output m version.
+#
+
+display_m_version() {
+  echo $VERSION && exit 0
+}
+
+#
+# Check for installed version, and populate $active
+#
+
+check_current_version() {
+  which mongo &> /dev/null
+  if test $? -eq 0; then
+    active=`mongod --version | egrep -o '[0-9]+\.[0-9]+\.[0-9]+([-_]rc[0-9]{1})?'`
+  fi
+}
+
+#
+# Display current mongodb --version
+# and others installed.
+#
+
+display_versions() {
+  check_current_version
+  for dir in $VERSIONS_DIR/*; do
+    local version=${dir##*/}
+    local config=`test -f $dir/.config && cat $dir/.config`
+    if test "$version" = "$active"; then
+      printf "  \033[32mο\033[0m $version \033[90m$config\033[0m\n"
+    else
+      printf "    $version \033[90m$config\033[0m\n"
+    fi
+  done
+}
+
+#
+# Install mongodb <version> [config ...]
+#
+
+install_mongo() {
+  local version=$1; shift
+  local config=$@
+  check_current_version
+
+  # activate
+  local dir=$VERSIONS_DIR/$version
+  if test -d $dir; then
+    cd $dir \
+      && cp -fR $dir/bin/* $M_PREFIX/bin
+  # install
+  else
+    local tarball="mongodb-src-r$version.tar.gz"
+    local url="http://downloads.mongodb.org/src/$tarball"
+    install_tarball $version $url $config
+  fi
+}
+
+#
+# Install mongodb <version> <tarball> [config ...]
+#
+
+install_tarball() {
+  local version=$1
+  local url=$2; shift 2
+  local config=$@
+
+  local dir=$VERSIONS_DIR/$version
+  local tarball="mongodb-src-r$version.tar.gz"
+  local logpath="/tmp/m.log"
+  local builddir=$M_PREFIX/m/mongo-r$version
+
+  ## create build directory
+  mkdir -p $builddir
+
+  ## fetch and unpack
+  cd $builddir \
+    && $GET $url | tar xz --strip-components=1 > $logpath 2>&1
+
+  ## see if things are alright
+  if test $? -gt 0; then
+    rm $tarball
+    echo "\033[31mError: installation failed\033[0m"
+    echo "  mongodb version $version does not exist,"
+    echo "  m failed to fetch the tarball,"
+    echo "  or tar failed. Try a different"
+    echo "  version or view $logpath to view"
+    echo "  error details."
+    exit 1
+  fi
+
+  cd "$builddir" \
+    && scons all \
+    && scons --prefix $VERSIONS_DIR/$version $config install \
+    && cd .. \
+    && cleanup $version \
+    && mkdir -p $dir \
+    && echo $config > "$dir/.config" \
+    && $0 $version \
+    && ln -sf "$M_PREFIX/m/versions/$version" "$M_PREFIX/m/current"
+}
+
+#
+# Cleanup after the given <version>
+#
+
+cleanup() {
+  local version=$1
+  local dir="mongo-r$version"
+
+  if test -d $dir; then
+    log "removing source"
+    rm -fr $dir
+  fi
+
+  if test -f "$dir.tar.gz"; then
+    log "removing tarball"
+    rm -fr "$dir.tar.gz"
+  fi
+}
+
+#
+# Remove <version ...>
+#
+
+remove_version() {
+  test -z $1 && abort "version(s) required"
+  local version=${1#v}
+  while test $# -ne 0; do
+    rm -rf $VERSIONS_DIR/$version
+    shift
+  done
+}
+
+#
+# Output bin path for <version>
+#
+
+display_bin_path_for_version() {
+  test -z $1 && abort "version required"
+  local version=${1#v}
+  local bin=$VERSIONS_DIR/$version/bin
+  if test -f "$bin/mongo"; then
+    echo $bin
+  else
+    abort "$1 is not installed"
+  fi
+}
+
+#
+# Execute the given <version> of mongodb
+# with [args ...]
+#
+
+execute_with_version() {
+  test -z $1 && abort "version required"
+  local version=${1#v}
+  local bin=$VERSIONS_DIR/$version/bin/mongo
+
+  shift # remove version
+
+  if test -f $bin; then
+    $bin $@
+  else
+    abort "$version is not installed"
+  fi
+}
+
+#
+# Display the latest mongodb release version.
+#
+
+display_latest_version() {
+  $GET 2> /dev/null http://dl.mongodb.org/dl/src/ \
+    | egrep -o '[0-9]+\.[0-9]+\.[0-9]+([-_]rc[0-9]+)?' \
+    | sort -u -k 1,1n -k 2,2n -k 3,3n -t . \
+    | tail -n1
+}
+
+#
+# Display the latest stable mongodb release version.
+#
+
+display_latest_stable_version() {
+  $GET 2> /dev/null http://dl.mongodb.org/dl/src/ \
+    | egrep -o '[0-9]+\.[02468]+\.[0-9]+\.' \
+    | sed s/.$// \
+    | sort -u -k 1,1n -k 2,2n -k 3,3n -t . \
+    | tail -n1
+}
+
+#
+# Display the available mongodb versions.
+#
+
+list_versions() {
+  check_current_version
+  local versions=""
+  versions=`$GET 2> /dev/null http://dl.mongodb.org/dl/src/ \
+    | egrep -o '[0-9]+\.[0-9]+\.[0-9]+([-_]rc[0-9]+)?' \
+    | sort -u -k 1,1n -k 2,2n -k 3,3 -t .
+    | awk '{ print "  " $1 }'`
+
+  for v in $versions; do
+    if test "$active" = "$v"; then
+      printf "  \033[32mο\033[0m $v \033[0m\n"
+    else
+      if test -d $VERSIONS_DIR/$v; then
+        printf "  * $v \033[0m\n"
+      else
+        printf "    $v\n"
+      fi
+    fi
+  done
+}
+
+# Handle arguments
+
+if test $# -eq 0; then
+  display_versions
+else
+  while test $# -ne 0; do
+    case $1 in
+      -V|--version) display_m_version ;;
+      -h|--help|help) display_help ;;
+      --latest) display_latest_version $2; exit ;;
+      --stable) display_latest_stable_version $2; exit ;;
+      bin|which) display_bin_path_for_version $2; exit ;;
+      as|use) shift; execute_with_version $@; exit ;;
+      rm|-) remove_version $2; exit ;;
+      latest) install_mongo `$0 --latest`; exit ;;
+      stable) install_mongo `$0 --stable`; exit ;;
+      ls|list) list_versions $2; exit ;;
+      c|custom) shift; install_tarball $@; exit ;;
+      *) install_mongo $@; exit ;;
+    esac
+    shift
+  done
+fi

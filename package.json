@@ -1,0 +1,19 @@
+{
+  "name": "m",
+  "version": "0.0.1",
+  "description": "mongodb version management",
+  "homepage": "https://github.com/aheckmann/m",
+  "bugs": "https://github.com/aheckmann/m/issues",
+  "bin": { "m": "./bin/m" },
+  "scripts": {
+    "test": "echo \"Error: no test specified\" && exit 1"
+  },
+  "keywords": [
+    "mongodb",
+    "version",
+    "binary"
+  ],
+  "author": "Aaron Heckmann <aaron.heckmann+github@gmail.com>",
+  "license": "MIT",
+  "repository": { "type": "git", "url": "git://github.com/aheckmann/m.git" }
+}
