@@ -8,7 +8,7 @@ M_PREFIX=${M_PREFIX-/usr/local}
 VERSIONS_DIR=$M_PREFIX/m/versions
 
 # m version
-VERSION="0.0.0"
+VERSION="0.0.1"
 
 #
 # Log the given <msg ...>
