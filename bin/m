@@ -5,7 +5,8 @@
 # swich to requested version (swap the symlinks)
 
 M_PREFIX=${M_PREFIX-/usr/local}
-VERSIONS_DIR=$M_PREFIX/m/versions
+M_DIR=$M_PREFIX/m
+VERSIONS_DIR=$M_DIR/versions
 
 # m version
 VERSION="0.0.1"
@@ -70,6 +71,15 @@ display_help() {
     m --latest                   Output the latest mongodb version available
     m --stable                   Output the latest stable mongodb version available
     m ls                         Output the versions of mongodb available
+    m pre <event> [script]       Declare one or list scripts to execute before <event> (scripts must use absolute paths)
+    m post <event> [script]      Declare one or list scripts to execute after <event> (scripts must use absolute paths)
+    m pre <event> rm [script]    Remove pre <event> script
+    m post <event> rm [script]   Remove post <event> script
+
+  Events:
+
+    change   Occurs when switching mongodb versions
+    install  Occurs when installing a previously uninstalled mongodb version
 
   Options:
 
@@ -137,8 +147,10 @@ install_mongo() {
   # activate
   local dir=$VERSIONS_DIR/$version
   if test -d $dir; then
+    pre change
     cd $dir \
-      && cp -fR $dir/bin/* $M_PREFIX/bin
+      && cp -fR $dir/bin/* $M_PREFIX/bin \
+      && post change
   # install
   else
     local tarball="mongodb-src-r$version.tar.gz"
@@ -152,6 +164,8 @@ install_mongo() {
 #
 
 install_tarball() {
+  pre install
+
   local version=$1
   local url=$2; shift 2
   local config=$@
@@ -188,7 +202,8 @@ install_tarball() {
     && mkdir -p $dir \
     && echo $config > "$dir/.config" \
     && $0 $version \
-    && ln -sf "$M_PREFIX/m/versions/$version" "$M_PREFIX/m/current"
+    && ln -sf "$M_PREFIX/m/versions/$version" "$M_PREFIX/m/current" \
+    && post install
 }
 
 #
@@ -305,6 +320,137 @@ list_versions() {
   done
 }
 
+#
+# store a hook
+#
+
+install_hook() {
+  local hook=$1
+  local event=$2
+  local path=$3
+  local file="$M_DIR/$1_$2"
+
+  #log "installing $1 hook into $file"
+  touch $file
+
+  validate_event $event
+
+  # with no path, print all hooks
+  if [ "" = "$path" ]; then
+    if [ "pre" = $hook ]; then
+      list_pres
+    else
+      list_posts
+    fi
+    exit 0
+  fi
+
+  if [ "-" = $path ] || [ "rm" = $path ]; then
+    # removing script or all scripts
+    if [ "" = "$4" ]; then
+      # remove all
+      cat /dev/null > $file
+    else
+      # remove specified
+      # skip sed & avoid path escaping issues
+      touch tmp
+      while read line
+      do
+        if ! [ $4 = $line ]; then
+          echo $line >> tmp
+        fi
+      done < $file
+      mv tmp $file
+    fi
+  else
+    # add hook
+
+    if ! test -x $path; then
+      abort "not an executable file: $path"
+    fi
+
+    if ! [[ $path == /* ]]; then
+      abort "not an absolute path: $path"
+    fi
+
+    # (ensure it exists only once)
+    # skip sed & avoid path escaping issues
+    while read line
+    do
+      if [ $path = $line ]; then
+        exit 0
+      fi
+    done < $file
+
+    echo $path >> $file
+  fi
+}
+
+#
+# validates hook type
+# {install,change}
+#
+
+validate_event() {
+  if ! ([ "$1" = "install" ] || [ "$1" = "change" ]); then
+    abort "invalid hook event: $1"
+  fi
+}
+
+#
+# executes pre hooks
+#
+
+pre() {
+  local file=$M_DIR/pre_$1
+  if test -f $file; then
+    while read line
+    do
+      $line
+    done < $file
+  fi
+}
+
+#
+# executes post hooks
+#
+
+post() {
+  local file=$M_DIR/post_$1
+  if test -f $file; then
+    while read line
+    do
+      $line
+    done < $file
+  fi
+}
+
+#
+# print all pre hooks
+#
+
+list_pres() {
+  if test -f $M_DIR/pre; then
+    while read line
+    do
+      echo $line
+    done < $M_DIR/pre
+  fi
+}
+
+#
+# print all post hooks
+#
+
+list_posts() {
+  if test -f $M_DIR/post; then
+    while read line
+    do
+      echo $line
+    done < $M_DIR/post
+  fi
+}
+
 # Handle arguments
 
 if test $# -eq 0; then
@@ -323,6 +469,8 @@ else
       stable) install_mongo `$0 --stable`; exit ;;
       ls|list) list_versions $2; exit ;;
       c|custom) shift; install_tarball $@; exit ;;
+      pre) shift; install_hook pre $@; exit ;;
+      post) shift; install_hook post $@; exit ;;
       *) install_mongo $@; exit ;;
     esac
     shift
