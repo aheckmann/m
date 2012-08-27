@@ -338,9 +338,9 @@ install_hook() {
   # with no path, print all hooks
   if [ "" = "$path" ]; then
     if [ "pre" = $hook ]; then
-      list_pres
+      list_pres $event
     else
-      list_posts
+      list_posts $event
     fi
     exit 0
   fi
@@ -430,11 +430,11 @@ post() {
 #
 
 list_pres() {
-  if test -f $M_DIR/pre; then
+  if test -f $M_DIR/pre_$1; then
     while read line
     do
       echo $line
-    done < $M_DIR/pre
+    done < $M_DIR/pre_$1
   fi
 }
 
@@ -443,11 +443,11 @@ list_pres() {
 #
 
 list_posts() {
-  if test -f $M_DIR/post; then
+  if test -f $M_DIR/post_$1; then
     while read line
     do
       echo $line
-    done < $M_DIR/post
+    done < $M_DIR/post_$1
   fi
 }
 
