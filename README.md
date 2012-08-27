@@ -82,6 +82,15 @@ Output from `m --help`:
     m --latest                   Output the latest mongodb version available
     m --stable                   Output the latest stable mongodb version available
     m ls                         Output the versions of mongodb available
+    m pre <event> [script]       Declare one or list scripts to execute before <event> (scripts must use absolute paths)
+    m post <event> [script]      Declare one or list scripts to execute after <event> (scripts must use absolute paths)
+    m pre <event> rm [script]    Remove pre <event> script
+    m post <event> rm [script]   Remove post <event> script
+
+  Events:
+
+    change   Occurs when switching mongodb versions
+    install  Occurs when installing a previously uninstalled mongodb version
 
   Options:
 
