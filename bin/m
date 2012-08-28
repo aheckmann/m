@@ -9,7 +9,7 @@ M_DIR=$M_PREFIX/m
 VERSIONS_DIR=$M_DIR/versions
 
 # m version
-VERSION="0.0.1"
+VERSION="0.0.2"
 
 #
 # Log the given <msg ...>

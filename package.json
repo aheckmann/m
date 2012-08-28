@@ -1,6 +1,6 @@
 {
   "name": "m",
-  "version": "0.0.1",
+  "version": "0.0.2",
   "description": "mongodb version management",
   "homepage": "https://github.com/aheckmann/m",
   "bugs": "https://github.com/aheckmann/m/issues",
@@ -11,6 +11,7 @@
   "keywords": [
     "mongodb",
     "version",
+    "manage",
     "binary"
   ],
   "author": "Aaron Heckmann <aaron.heckmann+github@gmail.com>",
