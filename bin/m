@@ -393,7 +393,7 @@ install_hook() {
 
 validate_event() {
   if ! ([ "$1" = "install" ] || [ "$1" = "change" ]); then
-    abort "invalid hook event: $1"
+    abort "invalid hook event: '$1'. Must be 'install' or 'change'."
   fi
 }
 
