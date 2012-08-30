@@ -1,0 +1,195 @@
+<!DOCTYPE html>
+<html>
+  <head>
+    <meta charset='utf-8'>
+    <meta http-equiv="X-UA-Compatible" content="chrome=1">
+
+    <link rel="stylesheet" type="text/css" href="stylesheets/stylesheet.css" media="screen" />
+    <link rel="stylesheet" type="text/css" href="stylesheets/pygment_trac.css" media="screen" />
+    <link rel="stylesheet" type="text/css" href="stylesheets/print.css" media="print" />
+
+    <title>M by aheckmann</title>
+  </head>
+
+  <body>
+
+    <header>
+      <div class="container">
+        <h1>M</h1>
+        <h2>mongodb version management</h2>
+
+        <section id="downloads">
+          <a href="https://github.com/aheckmann/m/zipball/master" class="btn">Download as .zip</a>
+          <a href="https://github.com/aheckmann/m/tarball/master" class="btn">Download as .tar.gz</a>
+          <a href="https://github.com/aheckmann/m" class="btn btn-github"><span class="icon"></span>View on GitHub</a>
+        </section>
+      </div>
+    </header>
+
+    <div class="container">
+      <section id="main_content">
+        <h1>m</h1>
+
+<p><a href="https://github.com/visionmedia/n">visionmedia</a>s flavor of binary management, ported for MongoDB.</p>
+
+<h2>Installation</h2>
+
+<pre><code>$ npm install -g m
+</code></pre>
+
+<p>or</p>
+
+<pre><code>$ make install
+</code></pre>
+
+<h3>Installing Binaries</h3>
+
+<p>Install a few versions, the version given becomes the active mongodb binary once installation is complete.</p>
+
+<pre><code>$ m 2.0.7
+$ m 2.2.0-rc2
+</code></pre>
+
+<p>List installed binaries:</p>
+
+<pre><code>$ m
+
+  2.0.6
+ο 2.0.7
+  2.2.0-rc2
+</code></pre>
+
+<p>Use or install the latest official release:</p>
+
+<pre><code>$ m latest
+</code></pre>
+
+<p>Use or install the stable official release:</p>
+
+<pre><code>$ m stable
+</code></pre>
+
+<p>Install a custom or patched version of mongodb from a tarball:</p>
+
+<pre><code>$ m custom 2.1.2-me https://github.com/aheckmann/mongo/tarball/r2.1.2
+</code></pre>
+
+<h3>Removing Binaries</h3>
+
+<p>Remove some versions:</p>
+
+<pre><code>$ m rm 2.2.0-rc1
+</code></pre>
+
+<p>Instead of using <code>rm</code> we can simply use <code>-</code>:</p>
+
+<pre><code>$ m - 2.2.0-rc1
+</code></pre>
+
+<h3>Binary Usage</h3>
+
+<p>When running multiple versions of mongodb, we can target
+them directly by asking <code>m</code> for the binary path:</p>
+
+<pre><code>$ m bin 2.0.7
+/usr/local/m/versions/2.0.7/bin/
+</code></pre>
+
+<p>Execute a script with 2.0.7 regardless of the active version:</p>
+
+<pre><code>$ m use 2.0.7 some.js
+</code></pre>
+
+<p>with flags:</p>
+
+<pre><code>$ m as 2.0.7 --debug some.js
+</code></pre>
+
+<p>When installing or changing the active version we might want to run custom scripts:</p>
+
+<pre><code>$ m pre install /path/to/my/script
+$ m post install /path/to/script
+$ m pre change /path/to/my/script
+$ m post change /path/to/script
+</code></pre>
+
+<p>List all post change hooks:</p>
+
+<pre><code>$ m post change
+</code></pre>
+
+<p>To remove a pre install hook:</p>
+
+<pre><code>$ m pre install rm /path/to/script
+</code></pre>
+
+<p>Remove all post install hooks:</p>
+
+<pre><code>$ m post install rm
+</code></pre>
+
+<h2>Usage</h2>
+
+<p>Output from <code>m --help</code>:</p>
+
+<pre><code>Usage: m [options] [COMMAND] [config]
+
+Commands:
+
+  m                            Output versions installed
+  m latest [config ...]        Install or activate the latest mongodb release
+  m stable [config ...]        Install or activate the latest stable mongodb release
+  m &lt;version&gt; [config ...]     Install and/or use mongodb &lt;version&gt;
+  m custom &lt;version&gt; &lt;tarball&gt; [config ...]  Install custom mongodb &lt;tarball&gt; with [args ...]
+  m use &lt;version&gt; [args ...]   Execute mongodb &lt;version&gt; with [args ...]
+  m bin &lt;version&gt;              Output bin path for &lt;version&gt;
+  m rm &lt;version ...&gt;           Remove the given version(s)
+  m --latest                   Output the latest mongodb version available
+  m --stable                   Output the latest stable mongodb version available
+  m ls                         Output the versions of mongodb available
+  m pre &lt;event&gt; [script]       Declare one or list scripts to execute before &lt;event&gt; (scripts must use absolute paths)
+  m post &lt;event&gt; [script]      Declare one or list scripts to execute after &lt;event&gt; (scripts must use absolute paths)
+  m pre &lt;event&gt; rm [script]    Remove pre &lt;event&gt; script
+  m post &lt;event&gt; rm [script]   Remove post &lt;event&gt; script
+
+Events:
+
+  change   Occurs when switching mongodb versions
+  install  Occurs when installing a previously uninstalled mongodb version
+
+Options:
+
+  -V, --version   Output current version of m
+  -h, --help      Display help information
+
+Aliases:
+
+  -       rm
+  which   bin
+  use     as
+  list    ls
+  custom  c
+</code></pre>
+
+<h2>Details</h2>
+
+<p><code>m</code> by default installs mongodb to <em>/usr/local/m/versions</em>, from
+ which it can see what you have currently installed, and activate previously installed versions of mongodb when <code>m &lt;version&gt;</code> is invoked again.</p>
+
+<p>Activated mongodb versions are then installed to the prefix <em>/usr/local</em>, which of course may be altered via the <strong>M_PREFIX</strong> environment variable.</p>
+
+<p>To alter where <code>m</code> operates simply export <strong>M_PREFIX</strong> to whatever you prefer.</p>
+
+<h2>License</h2>
+
+<p><a href="https://github.com/aheckmann/m/blob/master/LICENSE">LICENSE</a></p>
+
+<h2>Inspiration</h2>
+
+<p>Yes tj, this is nearly identical to <a href="https://github.com/visionmedia/n">n</a>. Huge thanks!</p>
+      </section>
+    </div>
+
+    
+  </body>
+</html>
