@@ -12,9 +12,13 @@
     "mongodb",
     "version",
     "manage",
-    "binary"
+    "binary",
+    "mongoose"
   ],
   "author": "Aaron Heckmann <aaron.heckmann+github@gmail.com>",
+  "contributors":[
+    "TJ Holowaychuk <tj@vision-media.ca>"
+  ],
   "license": "MIT",
   "repository": { "type": "git", "url": "git://github.com/aheckmann/m.git" }
 }
