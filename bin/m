@@ -261,7 +261,7 @@ display_bin_path_for_version() {
 execute_with_version() {
   test -z $1 && abort "version required"
   local version=${1#v}
-  local bin=$VERSIONS_DIR/$version/bin/mongo
+  local bin=$VERSIONS_DIR/$version/bin/mongod
 
   shift # remove version
 
