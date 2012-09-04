@@ -135,7 +135,7 @@ Output from `m --help`:
 
 ## License
 
-[LICENSE](https://github.com/aheckmann/m/blob/master/LICENSE)
+[MIT](https://github.com/aheckmann/m/blob/master/LICENSE)
 
 ## Inspiration
 
