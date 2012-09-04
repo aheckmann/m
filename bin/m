@@ -72,6 +72,7 @@ display_help() {
     m --latest                   Output the latest mongodb version available
     m --stable                   Output the latest stable mongodb version available
     m ls                         Output the versions of mongodb available
+    m src <version>              Output the url for source used for the given <version>
     m pre <event> [script]       Declare one or list scripts to execute before <event> (scripts must use absolute paths)
     m post <event> [script]      Declare one or list scripts to execute after <event> (scripts must use absolute paths)
     m pre <event> rm [script]    Remove pre <event> script
@@ -342,6 +343,18 @@ list_versions() {
 }
 
 #
+# Display src url for given <version>.
+#
+
+list_src_url() {
+  test -z $1 && abort "version required"
+  local version=$1
+  local tarball="mongodb-src-r$version.tar.gz"
+  local url="http://downloads.mongodb.org/src/$tarball"
+  echo "$url"
+}
+
+#
 # store a hook
 #
 
@@ -493,6 +506,7 @@ else
       c|custom) shift; install_tarball $@; exit ;;
       pre) shift; install_hook pre $@; exit ;;
       post) shift; install_hook post $@; exit ;;
+      src) shift; list_src_url $@; exit;;
       *) install_mongo $@; exit ;;
     esac
     shift
