@@ -1,4 +1,9 @@
 
+0.1.0 / 2012-09-04
+==================
+
+  * `use` should launch mongod not mongo shell (#7) [matulef](https://github.com/matulef)
+
 0.0.3 / 2012-08-29
 ==================
 
