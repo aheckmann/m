@@ -95,14 +95,19 @@ them directly by asking <code>m</code> for the binary path:</p>
 /usr/local/m/versions/2.0.7/bin/
 </code></pre>
 
-<p>Execute a script with 2.0.7 regardless of the active version:</p>
+<p>Start up mongod 2.0.7 regardless of the active version:</p>
 
-<pre><code>$ m use 2.0.7 some.js
+<pre><code>$ m use 2.0.7 --port 29000 --dbpath /data/2.0.7/
+</code></pre>
+
+<p>Execute a script with the 2.0.7 shell regardless of the active version:</p>
+
+<pre><code>$ m shell 2.0.7 some.js
 </code></pre>
 
 <p>with flags:</p>
 
-<pre><code>$ m as 2.0.7 --debug some.js
+<pre><code>$ m s 2.0.7 --port 29000 --eval 1+1
 </code></pre>
 
 <p>When installing or changing the active version we might want to run custom scripts:</p>
@@ -113,14 +118,34 @@ $ m pre change /path/to/my/script
 $ m post change /path/to/script
 </code></pre>
 
-<p>List all post change hooks:</p>
+<p>Multiple scripts may be added for any event. To add two <code>pre change</code> scripts:</p>
 
-<pre><code>$ m post change
+<pre><code>$ m pre change /path/to/script1
+$ m pre change /path/to/script2
 </code></pre>
 
-<p>To remove a pre install hook:</p>
+<p>Scripts are executed in the order they were added.</p>
 
-<pre><code>$ m pre install rm /path/to/script
+<p>List all pre change hooks:</p>
+
+<pre><code>$ m pre change
+
+/path/to/script1
+/path/to/script2
+</code></pre>
+
+<p>List all post install hooks:</p>
+
+<pre><code>$ m post install
+
+/path/to/scriptA
+/path/to/scriptB
+/path/to/scriptC
+</code></pre>
+
+<p>To remove a post install hook:</p>
+
+<pre><code>$ m post install rm /path/to/scriptB
 </code></pre>
 
 <p>Remove all post install hooks:</p>
@@ -142,11 +167,13 @@ Commands:
   m &lt;version&gt; [config ...]     Install and/or use mongodb &lt;version&gt;
   m custom &lt;version&gt; &lt;tarball&gt; [config ...]  Install custom mongodb &lt;tarball&gt; with [args ...]
   m use &lt;version&gt; [args ...]   Execute mongodb &lt;version&gt; with [args ...]
+  m shell &lt;version&gt; [args ...] Open a mongo shell &lt;version&gt; with [args ...]
   m bin &lt;version&gt;              Output bin path for &lt;version&gt;
   m rm &lt;version ...&gt;           Remove the given version(s)
   m --latest                   Output the latest mongodb version available
   m --stable                   Output the latest stable mongodb version available
   m ls                         Output the versions of mongodb available
+  m src &lt;version&gt;              Output the url for source used for the given &lt;version&gt;
   m pre &lt;event&gt; [script]       Declare one or list scripts to execute before &lt;event&gt; (scripts must use absolute paths)
   m post &lt;event&gt; [script]      Declare one or list scripts to execute after &lt;event&gt; (scripts must use absolute paths)
   m pre &lt;event&gt; rm [script]    Remove pre &lt;event&gt; script
@@ -169,6 +196,7 @@ Aliases:
   use     as
   list    ls
   custom  c
+  shell   s
 </code></pre>
 
 <h2>Details</h2>
@@ -182,7 +210,7 @@ Aliases:
 
 <h2>License</h2>
 
-<p><a href="https://github.com/aheckmann/m/blob/master/LICENSE">LICENSE</a></p>
+<p><a href="https://github.com/aheckmann/m/blob/master/LICENSE">MIT</a></p>
 
 <h2>Inspiration</h2>
 
