@@ -74,13 +74,31 @@ When installing or changing the active version we might want to run custom scrip
     $ m pre change /path/to/my/script
     $ m post change /path/to/script
     
-List all post change hooks:
+Multiple scripts may be added for any event. To add two `pre change` scripts:
 
-    $ m post change
+    $ m pre change /path/to/script1
+    $ m pre change /path/to/script2
     
-To remove a pre install hook:
+Scripts are executed in the order they were added.
+    
+List all pre change hooks:
 
-    $ m pre install rm /path/to/script
+    $ m pre change
+    
+    /path/to/script1
+    /path/to/script2
+    
+List all post install hooks:
+
+    $ m post install
+    
+    /path/to/scriptA
+    /path/to/scriptB
+    /path/to/scriptC
+    
+To remove a post install hook:
+
+    $ m post install rm /path/to/scriptB
     
 Remove all post install hooks:
 
