@@ -156,6 +156,16 @@ install_mongo() {
       && post change
   # install
   else
+    # confirm they wish to install
+    echo "MongoDB version $version is not installed."
+    while true; do
+      read -p "Installation it may take a while. Would you like to proceed? [y/n] " yn
+      case $yn in
+        [Yy]* ) echo "Installing..."; break;;
+        [Nn]* ) echo "Aborted."; exit 0;;
+        * ) echo "Please answer yes or no.";;
+      esac
+    done
     local tarball="mongodb-src-r$version.tar.gz"
     local url="http://downloads.mongodb.org/src/$tarball"
     install_tarball $version $url $config
