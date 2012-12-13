@@ -54,14 +54,18 @@ them directly by asking `m` for the binary path:
 
     $ m bin 2.0.7
     /usr/local/m/versions/2.0.7/bin/
+    
+Start up mongod 2.0.7 regardless of the active version:
 
-Execute a script with 2.0.7 regardless of the active version:
+    $ m use 2.0.7 --port 29000 --dbpath /data/2.0.7/
 
-    $ m use 2.0.7 some.js
+Execute a script with the 2.0.7 shell regardless of the active version:
+
+    $ m shell 2.0.7 some.js
 
 with flags:
 
-    $ m as 2.0.7 --debug some.js
+    $ m s 2.0.7 --port 29000 --eval 1+1
     
 When installing or changing the active version we might want to run custom scripts:
 
@@ -70,13 +74,31 @@ When installing or changing the active version we might want to run custom scrip
     $ m pre change /path/to/my/script
     $ m post change /path/to/script
     
-List all post change hooks:
+Multiple scripts may be added for any event. To add two `pre change` scripts:
 
-    $ m post change
+    $ m pre change /path/to/script1
+    $ m pre change /path/to/script2
     
-To remove a pre install hook:
+Scripts are executed in the order they were added.
+    
+List all pre change hooks:
 
-    $ m pre install rm /path/to/script
+    $ m pre change
+    
+    /path/to/script1
+    /path/to/script2
+    
+List all post install hooks:
+
+    $ m post install
+    
+    /path/to/scriptA
+    /path/to/scriptB
+    /path/to/scriptC
+    
+To remove a post install hook:
+
+    $ m post install rm /path/to/scriptB
     
 Remove all post install hooks:
 
@@ -96,11 +118,13 @@ Output from `m --help`:
       m <version> [config ...]     Install and/or use mongodb <version>
       m custom <version> <tarball> [config ...]  Install custom mongodb <tarball> with [args ...]
       m use <version> [args ...]   Execute mongodb <version> with [args ...]
+      m shell <version> [args ...] Open a mongo shell <version> with [args ...]
       m bin <version>              Output bin path for <version>
       m rm <version ...>           Remove the given version(s)
       m --latest                   Output the latest mongodb version available
       m --stable                   Output the latest stable mongodb version available
       m ls                         Output the versions of mongodb available
+      m src <version>              Output the url for source used for the given <version>
       m pre <event> [script]       Declare one or list scripts to execute before <event> (scripts must use absolute paths)
       m post <event> [script]      Declare one or list scripts to execute after <event> (scripts must use absolute paths)
       m pre <event> rm [script]    Remove pre <event> script
@@ -123,6 +147,7 @@ Output from `m --help`:
       use     as
       list    ls
       custom  c
+      shell   s
 
 ## Details
 
