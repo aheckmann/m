@@ -90,7 +90,6 @@ display_help() {
 
   Aliases:
 
-    -       rm
     which   bin
     use     as
     list    ls
@@ -509,7 +508,7 @@ else
       bin|which) display_bin_path_for_version $2; exit ;;
       as|use) shift; execute_with_version $@; exit ;;
       s|shell) shift; execute_shell_with_version $@; exit ;;
-      rm|-) remove_version $2; exit ;;
+      rm) remove_version $2; exit ;;
       latest) install_mongo `$0 --latest`; exit ;;
       stable) install_mongo `$0 --stable`; exit ;;
       ls|list) list_versions $2; exit ;;
