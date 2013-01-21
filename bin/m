@@ -174,7 +174,7 @@ prompt_install() {
   while true; do
     read -p "Installation may take a while. Would you like to proceed? [y/n] " yn
     case $yn in
-      [Yy]* ) echo "Installing..."; break;;
+      [Yy]* ) break;;
       [Nn]* ) echo "Aborted."; exit 0;;
       * ) echo "Please answer yes or no.";;
     esac
@@ -201,9 +201,8 @@ install_bin() {
   local version=$1
   local config=$2
 
-  # if config was passed, must build from source
   if ! test -z $config; then
-    echo "installing from source"
+    # config was passed, must build from source
     local tarball="mongodb-src-r$version.tar.gz"
     local url="http://downloads.mongodb.org/src/$tarball"
     install_tarball $version $url $config
@@ -236,6 +235,8 @@ install_bin() {
     exit 0;
   fi
 
+  echo "Installing binary..."
+
   pre install
 
   # perform the download
@@ -259,6 +260,8 @@ install_bin() {
 #
 
 install_tarball() {
+  echo "Installing from source..."
+
   pre install
 
   local version=$1
@@ -302,6 +305,7 @@ bin_not_supported() {
   local tarball="mongodb-src-r$version.tar.gz"
   local url="http://downloads.mongodb.org/src/$tarball"
   prompt_install "Binary for \"$OS $version\" not supported. Attempting to install from source."
+  echo "Installing from source..."
   install_tarball $version $url $config
 }
 
