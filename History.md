@@ -1,4 +1,11 @@
 
+0.2.0 / 2013-01-20
+==================
+
+  * build from source when config is passed
+  * install using pre-built binaries
+  * remove "-" alias
+
 0.1.2 / 2012-12-13
 ==================
 

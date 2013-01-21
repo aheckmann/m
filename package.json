@@ -1,6 +1,6 @@
 {
   "name": "m",
-  "version": "0.1.3-pre",
+  "version": "0.2.0",
   "description": "mongodb version management",
   "homepage": "https://github.com/aheckmann/m",
   "bugs": "https://github.com/aheckmann/m/issues",
