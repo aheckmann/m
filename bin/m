@@ -195,10 +195,16 @@ prompt_install() {
 #
 
 install_bin() {
-  pre install
-
   local version=$1
   local config=$2
+
+  # if config was passed, must build from source
+  if ! test -z $config; then
+    local tarball="mongodb-src-r$version.tar.gz"
+    local url="http://downloads.mongodb.org/src/$tarball"
+    install_tarball $version $url $config
+    exit 0
+  fi
 
   # determine url based on os and arch
 
@@ -225,6 +231,8 @@ install_bin() {
     bin_not_supported $OS $version $config
     exit 0;
   fi
+
+  pre install
 
   # perform the download
   local builddir="$BUILD_DIR_BASE$version"
