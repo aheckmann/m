@@ -203,6 +203,7 @@ install_bin() {
 
   # if config was passed, must build from source
   if ! test -z $config; then
+    echo "installing from source"
     local tarball="mongodb-src-r$version.tar.gz"
     local url="http://downloads.mongodb.org/src/$tarball"
     install_tarball $version $url $config
