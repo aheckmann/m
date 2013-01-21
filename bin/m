@@ -72,7 +72,7 @@ display_help() {
     m --latest                   Output the latest mongodb version available
     m --stable                   Output the latest stable mongodb version available
     m ls                         Output the versions of mongodb available
-    m src <version>              Output the url for source used for the given <version>
+    m src <version>              Output the url for source used for the given <version> (useful if installed from source)
     m pre <event> [script]       Declare one or list scripts to execute before <event> (scripts must use absolute paths)
     m post <event> [script]      Declare one or list scripts to execute after <event> (scripts must use absolute paths)
     m pre <event> rm [script]    Remove pre <event> script
@@ -188,7 +188,7 @@ prompt_install() {
 #   osx64       http://fastdl.mongodb.org/osx/mongodb-osx-x86_64-2.2.2.tgz
 #   solaris64   http://fastdl.mongodb.org/sunos5/mongodb-sunos5-x86_64-2.2.2.tgz
 #
-#   ignore these
+#   not supported
 #   win32       http://fastdl.mongodb.org/win32/mongodb-win32-i386-2.3.2.zip
 #   win64       http://fastdl.mongodb.org/win32/mongodb-win32-x86_64-2.0.8.zip
 #   win64 2008+ http://fastdl.mongodb.org/win32/mongodb-win32-x86_64-2008plus-2.0.3.zip
