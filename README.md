@@ -36,16 +36,16 @@ Use or install the stable official release:
 Install a custom or patched version of mongodb from a tarball:
 
     $ m custom 2.1.2-me https://github.com/aheckmann/mongo/tarball/r2.1.2
+    
+Install a version of mongodb from source:
+
+    $ m 2.2.3-rc0 source
 
 ### Removing Binaries
 
-Remove some versions:
+Remove a version:
 
     $ m rm 2.2.0-rc1
-
-Instead of using `rm` we can simply use `-`:
-
-    $ m - 2.2.0-rc1
 
 ### Binary Usage
 
@@ -142,7 +142,6 @@ Output from `m --help`:
 
     Aliases:
 
-      -       rm
       which   bin
       use     as
       list    ls
