@@ -1,15 +1,15 @@
 #!/usr/bin/env bash
 
-# download mongo version if not installed
-#   untar to separate directory
-# swich to requested version (swap the symlinks)
-
 M_PREFIX=${M_PREFIX-/usr/local}
 M_DIR=$M_PREFIX/m
 VERSIONS_DIR=$M_DIR/versions
+BUILD_DIR_BASE=$M_DIR/mongo-
 
 # m version
 VERSION="0.1.3-pre"
+
+# log path
+LOGPATH="/tmp/m.log"
 
 #
 # Log the given <msg ...>
@@ -155,24 +155,95 @@ install_mongo() {
       && post change
   # install
   else
-    # confirm they wish to install
-    echo "MongoDB version $version is not installed."
-    while true; do
-      read -p "Installation it may take a while. Would you like to proceed? [y/n] " yn
-      case $yn in
-        [Yy]* ) echo "Installing..."; break;;
-        [Nn]* ) echo "Aborted."; exit 0;;
-        * ) echo "Please answer yes or no.";;
-      esac
-    done
-    local tarball="mongodb-src-r$version.tar.gz"
-    local url="http://downloads.mongodb.org/src/$tarball"
-    install_tarball $version $url $config
+    prompt_install "MongoDB version $version is not installed."
+    install_bin $version $config
   fi
 }
 
 #
-# Install mongodb <version> <tarball> [config ...]
+# Prompt installation
+#
+#   prompt_install "About to install something"
+#
+
+prompt_install() {
+  echo $1
+  while true; do
+    read -p "Installation may take a while. Would you like to proceed? [y/n] " yn
+    case $yn in
+      [Yy]* ) echo "Installing..."; break;;
+      [Nn]* ) echo "Aborted."; exit 0;;
+      * ) echo "Please answer yes or no.";;
+    esac
+  done
+}
+
+#
+# Install mongodb <version> binary
+#
+#   template    http://fastdl.mongodb.org/$OS/mongodb-$OS-$ARCH-$VERSION.tgz
+#
+#   linux32     http://fastdl.mongodb.org/linux/mongodb-linux-i686-2.2.2.tgz
+#   linux64     http://fastdl.mongodb.org/linux/mongodb-linux-x86_64-2.2.2.tgz
+#   osx64       http://fastdl.mongodb.org/osx/mongodb-osx-x86_64-2.2.2.tgz
+#   solaris64   http://fastdl.mongodb.org/sunos5/mongodb-sunos5-x86_64-2.2.2.tgz
+#
+#   ignore these
+#   win32       http://fastdl.mongodb.org/win32/mongodb-win32-i386-2.3.2.zip
+#   win64       http://fastdl.mongodb.org/win32/mongodb-win32-x86_64-2.0.8.zip
+#   win64 2008+ http://fastdl.mongodb.org/win32/mongodb-win32-x86_64-2008plus-2.0.3.zip
+#
+
+install_bin() {
+  pre install
+
+  local version=$1
+  local config=$2
+
+  # determine url based on os and arch
+
+  local arch=`uname -m`
+  local OS=`uname`
+  local os=`echo $OS | tr '[:upper:]' '[:lower:]'`
+
+  case $os in
+    linux* )
+      os=linux ;;
+    darwin* )
+      os=osx ;;
+    sunos* )
+      os=sunos5 ;;
+    * )
+      bin_not_supported $OS $version $config ;;
+  esac
+
+  # check the download url
+  local tarball="mongodb-$os-$arch-$version.tgz"
+  local url="http://fastdl.mongodb.org/$os/$tarball"
+
+  if ! good $url; then
+    bin_not_supported $OS $version $config
+    exit 0;
+  fi
+
+  # perform the download
+  local builddir="$BUILD_DIR_BASE$version"
+  download $version $url $builddir
+
+  # copy binaries to version directory
+  local dir=$VERSIONS_DIR/$version
+  mkdir -p $dir
+
+  mv "$builddir/bin" $dir \
+    && cleanup "$builddir" \
+    && $0 $version \
+    && ln -sf $dir "$M_PREFIX/m/current" \
+    && post install
+}
+
+# Install mongodb <version> from source <tarball> [config ...]
+#
+#   m custom 2.3.2 http://downloads.mongodb.org/src/mongodb-src-r2.3.2.tar.gz flags
 #
 
 install_tarball() {
@@ -182,40 +253,73 @@ install_tarball() {
   local url=$2; shift 2
   local config=$@
 
+  local builddir="$BUILD_DIR_BASE$version"
+
+  download $version $url $builddir
+
   local dir=$VERSIONS_DIR/$version
-  local tarball="mongodb-src-r$version.tar.gz"
-  local logpath="/tmp/m.log"
-  local builddir=$M_PREFIX/m/mongo-r$version
-
-  ## create build directory
-  mkdir -p $builddir
-
-  ## fetch and unpack
-  cd $builddir \
-    && $GET $url | tar xz --strip-components=1 > $logpath 2>&1
-
-  ## see if things are alright
-  if test $? -gt 0; then
-    rm $tarball
-    echo "\033[31mError: installation failed\033[0m"
-    echo "  mongodb version $version does not exist,"
-    echo "  m failed to fetch the tarball,"
-    echo "  or tar failed. Try a different"
-    echo "  version or view $logpath to view"
-    echo "  error details."
-    exit 1
-  fi
 
   cd "$builddir" \
     && scons all \
-    && scons --prefix $VERSIONS_DIR/$version $config install \
+    && scons --prefix $dir $config install \
     && cd .. \
-    && cleanup $version \
-    && mkdir -p $dir \
+    && cleanup "$builddir" \
     && echo $config > "$dir/.config" \
     && $0 $version \
-    && ln -sf "$M_PREFIX/m/versions/$version" "$M_PREFIX/m/current" \
+    && ln -sf $dir "$M_PREFIX/m/current" \
     && post install
+}
+
+#
+# Determine if $url is good
+#
+
+good() {
+  local url=$1
+  curl -Is $url | head -n 1 | grep 200 > /dev/null
+}
+
+#
+# Prompt when we cannot install binary
+#
+
+bin_not_supported() {
+  local OS=$1
+  local version=$2
+  local config=$3
+  local tarball="mongodb-src-r$version.tar.gz"
+  local url="http://downloads.mongodb.org/src/$tarball"
+  prompt_install "Binary for \"$OS $version\" not supported. Attempting to install from source."
+  install_tarball $version $url $config
+}
+
+#
+# Download and untar
+#
+
+download() {
+  local version=$1
+  local url=$2
+  local builddir=$3
+
+  # create build directory
+  mkdir -p $builddir
+
+  # fetch and unpack
+  cd $builddir \
+    && $GET $url | tar xz --strip-components=1 > $LOGPATH 2>&1
+
+  # see if things are alright
+  if test $? -gt 0; then
+    cleanup "$builddir"
+    printf "\033[31mError: installation failed\033[0m\n"
+    printf "  mongodb version $version does not exist,\n"
+    printf "  m failed to fetch the tarball,\n"
+    printf "  or tar failed. Try a different\n"
+    printf "  version or view $LOGPATH to view\n"
+    printf "  error details.\n"
+    exit 1
+  fi
 }
 
 #
@@ -223,17 +327,11 @@ install_tarball() {
 #
 
 cleanup() {
-  local version=$1
-  local dir="mongo-r$version"
+  local dir=$1
 
   if test -d $dir; then
     log "removing source"
-    rm -fr $dir
-  fi
-
-  if test -f "$dir.tar.gz"; then
-    log "removing tarball"
-    rm -fr "$dir.tar.gz"
+    rm -rf $dir
   fi
 }
 
