@@ -235,7 +235,7 @@ install_bin() {
     exit 0;
   fi
 
-  echo "Installing binary..."
+  log "installing binary"
 
   pre install
 
@@ -251,7 +251,8 @@ install_bin() {
     && cleanup "$builddir" \
     && $0 $version \
     && ln -sf $dir "$M_PREFIX/m/current" \
-    && post install
+    && post install \
+    && log "installation complete"
 }
 
 # Install mongodb <version> from source <tarball> [config ...]
@@ -260,7 +261,7 @@ install_bin() {
 #
 
 install_tarball() {
-  echo "Installing from source..."
+  log "installing from source"
 
   pre install
 
@@ -282,7 +283,8 @@ install_tarball() {
     && echo $config > "$dir/.config" \
     && $0 $version \
     && ln -sf $dir "$M_PREFIX/m/current" \
-    && post install
+    && post install \
+    && log "installation complete"
 }
 
 #
@@ -305,7 +307,7 @@ bin_not_supported() {
   local tarball="mongodb-src-r$version.tar.gz"
   local url="http://downloads.mongodb.org/src/$tarball"
   prompt_install "Binary for \"$OS $version\" not supported. Attempting to install from source."
-  echo "Installing from source..."
+  log "installing from source"
   install_tarball $version $url $config
 }
 
