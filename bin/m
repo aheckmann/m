@@ -249,7 +249,7 @@ install_bin() {
 
   mv "$builddir/bin" $dir \
     && cleanup "$builddir" \
-    && $0 $version \
+    && install_mongo $version \
     && ln -sf $dir "$M_PREFIX/m/current" \
     && post install \
     && log "installation complete"
