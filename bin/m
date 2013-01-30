@@ -149,6 +149,11 @@ install_mongo() {
   local config=$@
   check_current_version
 
+  if test "$version" = "$active"; then
+    echo "$version already active"
+    exit 0;
+  fi
+
   # activate
   local dir=$VERSIONS_DIR/$version
   if test -d $dir; then
