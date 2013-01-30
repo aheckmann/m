@@ -30,7 +30,7 @@
       <section id="main_content">
         <h1>m</h1>
 
-<p><a href="https://github.com/visionmedia/n">visionmedia</a>s flavor of binary management, ported for MongoDB.</p>
+<p>MongoDB version manager</p>
 
 <h2>Installation</h2>
 
@@ -39,7 +39,7 @@
 
 <p>or</p>
 
-<pre><code>$ make install
+<pre><code>$ git clone git://github.com/aheckmann/m.git &amp;&amp; cd m &amp;&amp; make install
 </code></pre>
 
 <h3>Installing Binaries</h3>
@@ -74,16 +74,16 @@ $ m 2.2.0-rc2
 <pre><code>$ m custom 2.1.2-me https://github.com/aheckmann/mongo/tarball/r2.1.2
 </code></pre>
 
-<h3>Removing Binaries</h3>
+<p>Install a version of mongodb from source:</p>
 
-<p>Remove some versions:</p>
-
-<pre><code>$ m rm 2.2.0-rc1
+<pre><code>$ m 2.2.3-rc0 source -j 4
 </code></pre>
 
-<p>Instead of using <code>rm</code> we can simply use <code>-</code>:</p>
+<h3>Removing Binaries</h3>
 
-<pre><code>$ m - 2.2.0-rc1
+<p>Remove a version:</p>
+
+<pre><code>$ m rm 2.2.0-rc1
 </code></pre>
 
 <h3>Binary Usage</h3>
@@ -191,7 +191,6 @@ Options:
 
 Aliases:
 
-  -       rm
   which   bin
   use     as
   list    ls
@@ -204,7 +203,7 @@ Aliases:
 <p><code>m</code> by default installs mongodb to <em>/usr/local/m/versions</em>, from
  which it can see what you have currently installed, and activate previously installed versions of mongodb when <code>m &lt;version&gt;</code> is invoked again.</p>
 
-<p>Activated mongodb versions are then installed to the prefix <em>/usr/local</em>, which of course may be altered via the <strong>M_PREFIX</strong> environment variable.</p>
+<p>Activated mongodb versions are then installed to the prefix <em>/usr/local</em>, which may be altered via the <strong>M_PREFIX</strong> environment variable.</p>
 
 <p>To alter where <code>m</code> operates simply export <strong>M_PREFIX</strong> to whatever you prefer.</p>
 
