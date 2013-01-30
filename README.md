@@ -153,7 +153,7 @@ Output from `m --help`:
  `m` by default installs mongodb to _/usr/local/m/versions_, from
  which it can see what you have currently installed, and activate previously installed versions of mongodb when `m <version>` is invoked again.
 
- Activated mongodb versions are then installed to the prefix _/usr/local_, which of course may be altered via the __M_PREFIX__ environment variable.
+ Activated mongodb versions are then installed to the prefix _/usr/local_, which may be altered via the __M_PREFIX__ environment variable.
 
  To alter where `m` operates simply export __M_PREFIX__ to whatever you prefer.
 
