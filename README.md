@@ -1,6 +1,6 @@
 # m
 
- [visionmedia](https://github.com/visionmedia/n)s flavor of binary management, ported for MongoDB.
+ MongoDB version manager
 
 ## Installation
 
