@@ -336,7 +336,7 @@ download() {
   if test $? -gt 0; then
     cleanup "$builddir"
     printf "\033[31mError: installation failed\033[0m\n"
-    printf "  mongodb version $version does not exist,\n"
+    printf "  MongoDB version $version does not exist,\n"
     printf "  m failed to fetch the tarball,\n"
     printf "  or tar failed. Try a different\n"
     printf "  version or view $LOGPATH to view\n"
