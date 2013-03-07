@@ -118,7 +118,7 @@ display_m_version() {
 check_current_version() {
   which mongo &> /dev/null
   if test $? -eq 0; then
-    active=`mongod --version | egrep -o '[0-9]+\.[0-9]+\.[0-9]+([-_]rc[0-9]{1})?'`
+    active=`mongod --version | egrep -o '[0-9]+\.[0-9]+\.[0-9]+([-_\.]rc[0-9]{1})?'`
   fi
 }
 
@@ -430,7 +430,7 @@ execute_shell_with_version() {
 
 display_latest_version() {
   $GET 2> /dev/null http://dl.mongodb.org/dl/src/ \
-    | egrep -o '[0-9]+\.[0-9]+\.[0-9]+([-_]rc[0-9]+)?' \
+    | egrep -o '[0-9]+\.[0-9]+\.[0-9]+([-_\.]rc[0-9]+)?' \
     | sort -u -k 1,1n -k 2,2n -k 3,3n -t . \
     | tail -n1
 }
@@ -441,8 +441,8 @@ display_latest_version() {
 
 display_latest_stable_version() {
   $GET 2> /dev/null http://dl.mongodb.org/dl/src/ \
-    | egrep -o '[0-9]+\.[02468]+\.[0-9]+\.' \
-    | sed s/.$// \
+    | egrep -o '[0-9]+\.[02468]+\.[0-9]+\.zip' \
+    | sed s/.zip$// \
     | sort -u -k 1,1n -k 2,2n -k 3,3n -t . \
     | tail -n1
 }
@@ -455,7 +455,7 @@ list_versions() {
   check_current_version
   local versions=""
   versions=`$GET 2> /dev/null http://dl.mongodb.org/dl/src/ \
-    | egrep -o '[0-9]+\.[0-9]+\.[0-9]+([-_]rc[0-9]+)?' \
+    | egrep -o '[0-9]+\.[0-9]+\.[0-9]+([-_\.]rc[0-9]+)?' \
     | sort -u -k 1,1n -k 2,2n -k 3,3 -t .
     | awk '{ print "  " $1 }'`
 
