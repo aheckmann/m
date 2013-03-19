@@ -76,15 +76,17 @@ $ m 2.2.0-rc2
 
 <p>Install a version of mongodb from source:</p>
 
-<pre><code>$ m 2.2.3-rc0 source -j 4
+<pre><code>$ m 2.2.3-rc0 source
 </code></pre>
 
 <h3>Removing Binaries</h3>
 
-<p>Remove a version:</p>
+<p>Remove some versions:</p>
 
-<pre><code>$ m rm 2.2.0-rc1
+<pre><code>$ m rm 2.2.0-rc1 2.0.4 2.4.0-rc0
 </code></pre>
+
+<p><em>Note that you cannot remove the actively running version. Change to a different version before removing.</em></p>
 
 <h3>Binary Usage</h3>
 
