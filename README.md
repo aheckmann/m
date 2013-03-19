@@ -8,7 +8,7 @@
 
 or
 
-    $ make install
+    $ git clone git://github.com/aheckmann/m.git && cd m && make install
 
 ### Installing Binaries
 
