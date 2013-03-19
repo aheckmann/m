@@ -43,9 +43,11 @@ Install a version of mongodb from source:
 
 ### Removing Binaries
 
-Remove a version:
+Remove some versions:
 
-    $ m rm 2.2.0-rc1
+    $ m rm 2.2.0-rc1 2.0.4 2.4.0-rc0
+
+_Note that you cannot remove the actively running version. Change to a different version before removing._
 
 ### Binary Usage
 
