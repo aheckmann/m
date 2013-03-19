@@ -359,14 +359,22 @@ cleanup() {
 }
 
 #
-# Remove <version ...>
+# Remove <versions ...>
 #
 
-remove_version() {
+remove_versions() {
   test -z $1 && abort "version(s) required"
-  local version=${1#v}
+  check_current_version
   while test $# -ne 0; do
-    rm -rf $VERSIONS_DIR/$version
+    local version=${1#v}
+    if test "$version" = "$active"; then
+      printf "\033[33mSKIPPING\033[0m active version $version. "
+      printf "Please change versions before removing.\n"
+    else
+      rm -rf $VERSIONS_DIR/$version
+      echo "removed $version"
+    fi
+
     shift
   done
 }
@@ -629,7 +637,7 @@ else
       bin|which) display_bin_path_for_version $2; exit ;;
       as|use) shift; execute_with_version $@; exit ;;
       s|shell) shift; execute_shell_with_version $@; exit ;;
-      rm) remove_version $2; exit ;;
+      rm) shift; remove_versions $@; exit ;;
       latest) install_mongo `$0 --latest`; exit ;;
       stable) install_mongo `$0 --stable`; exit ;;
       ls|list) list_versions $2; exit ;;
