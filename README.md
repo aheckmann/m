@@ -37,7 +37,7 @@ Install a custom or patched version of mongodb from a tarball:
 
     $ m custom 2.1.2-me https://github.com/aheckmann/mongo/tarball/r2.1.2
     
-Install a version of mongodb from source:
+Install a version of mongodb from source (requires `scons`):
 
     $ m 2.2.3-rc0 source
 
