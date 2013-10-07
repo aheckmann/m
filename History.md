@@ -1,4 +1,12 @@
 
+0.2.5 / 2013-10-07
+==================
+
+ * Merge pull request #14 from brandonblack/m-version-update
+ * minor: relaxing the version regex
+ * docs; mention scons dependency
+ * Update README.md
+
 0.2.4 / 2013-03-19
 ==================
 
