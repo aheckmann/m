@@ -1,9 +1,13 @@
 
+0.2.6 / 2013-10-11
+==================
+
+ * minor: fixing my mistake in version regex #15 [brandonblack](https://github.com/brandonblack)
+
 0.2.5 / 2013-10-07
 ==================
 
- * Merge pull request #14 from brandonblack/m-version-update
- * minor: relaxing the version regex
+ * minor: relaxing the version regex #14 [brandonblack](https://github.com/brandonblack)
  * docs; mention scons dependency
  * Update README.md
 
