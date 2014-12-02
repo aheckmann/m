@@ -1,4 +1,9 @@
 
+1.0.0 / 2014-12-01
+==================
+
+ * fixed; sort versions properly #16 [gianpaj](https://github.com/gianpa)
+
 0.2.6 / 2013-10-11
 ==================
 
