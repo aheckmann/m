@@ -128,8 +128,9 @@ check_current_version() {
 
 display_versions() {
   check_current_version
-  for dir in $VERSIONS_DIR/*; do
-    local version=${dir##*/}
+  local versions=`ls -1 $VERSIONS_DIR | sort -t. -k 1,1n -k 2,2n -k 3,3n`
+  for version in $versions; do
+    local dir="$VERSIONS_DIR/$version"
     local config=`test -f $dir/.config && cat $dir/.config`
     if test "$version" = "$active"; then
       printf "  \033[32mο\033[0m $version \033[90m$config\033[0m\n"
