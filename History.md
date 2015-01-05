@@ -1,8 +1,13 @@
 
+1.0.1 / 2015-01-04
+==================
+
+ * fix 'm ls' warning #17 [gianpaj](https://github.com/gianpaj)
+
 1.0.0 / 2014-12-01
 ==================
 
- * fixed; sort versions properly #16 [gianpaj](https://github.com/gianpa)
+ * fixed; sort versions properly #16 [gianpaj](https://github.com/gianpaj)
 
 0.2.6 / 2013-10-11
 ==================
