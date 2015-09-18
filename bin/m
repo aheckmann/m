@@ -66,6 +66,7 @@ display_help() {
     m <version> [config ...]     Install and/or use mongodb <version>
     m custom <version> <tarball> [config ...]  Install custom mongodb <tarball> with [args ...]
     m use <version> [args ...]   Execute mongod <version> with [args ...]
+    m shard <version> [args ...] Execute mongos <version> with [args ...]
     m shell <version> [args ...] Open a mongo shell <version> with [args ...]
     m bin <version>              Output bin path for <version>
     m rm <version ...>           Remove the given version(s)
@@ -95,6 +96,7 @@ display_help() {
 
     which   bin
     use     as
+    shard   sd
     list    ls
     custom  c
     shell   s
@@ -414,6 +416,27 @@ execute_with_version() {
 }
 
 #
+# Execute the given <version> of mongos
+# with [args ...]
+#
+
+execute_shard_with_version() {
+  test -z $1 && abort "version required"
+  local version=${1#v}
+  local bin=$VERSIONS_DIR/$version/bin/mongos
+
+  shift # remove version
+
+  if test -f $bin; then
+    $bin $@
+  else
+    abort "$version is not installed"
+  fi
+}
+
+
+
+#
 # Execute a script with the given shell of
 # mongodb <version> with [args...]
 #
@@ -636,6 +659,7 @@ else
       --stable) display_latest_stable_version $2; exit ;;
       bin|which) display_bin_path_for_version $2; exit ;;
       as|use) shift; execute_with_version $@; exit ;;
+      sd|shard) shift; execute_shard_with_version $@; exit ;;
       s|shell) shift; execute_shell_with_version $@; exit ;;
       rm) shift; remove_versions $@; exit ;;
       latest) install_mongo `$0 --latest`; exit ;;
