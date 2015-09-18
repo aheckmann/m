@@ -110,45 +110,49 @@ Remove all post install hooks:
 
 Output from `m --help`:
 
-    Usage: m [options] [COMMAND] [config]
+```
+  Usage: m [options] [COMMAND] [config]
 
-    Commands:
+  Commands:
 
-      m                            Output versions installed
-      m latest [config ...]        Install or activate the latest mongodb release
-      m stable [config ...]        Install or activate the latest stable mongodb release
-      m <version> [config ...]     Install and/or use mongodb <version>
-      m custom <version> <tarball> [config ...]  Install custom mongodb <tarball> with [args ...]
-      m use <version> [args ...]   Execute mongodb <version> with [args ...]
-      m shell <version> [args ...] Open a mongo shell <version> with [args ...]
-      m bin <version>              Output bin path for <version>
-      m rm <version ...>           Remove the given version(s)
-      m --latest                   Output the latest mongodb version available
-      m --stable                   Output the latest stable mongodb version available
-      m ls                         Output the versions of mongodb available
-      m src <version>              Output the url for source used for the given <version>
-      m pre <event> [script]       Declare one or list scripts to execute before <event> (scripts must use absolute paths)
-      m post <event> [script]      Declare one or list scripts to execute after <event> (scripts must use absolute paths)
-      m pre <event> rm [script]    Remove pre <event> script
-      m post <event> rm [script]   Remove post <event> script
+    m                            Output versions installed
+    m latest [config ...]        Install or activate the latest mongodb release
+    m stable [config ...]        Install or activate the latest stable mongodb release
+    m <version> [config ...]     Install and/or use mongodb <version>
+    m custom <version> <tarball> [config ...]  Install custom mongodb <tarball> with [args ...]
+    m use <version> [args ...]   Execute mongod <version> with [args ...]
+    m shard <version> [args ...] Execute mongos <version> with [args ...]
+    m shell <version> [args ...] Open a mongo shell <version> with [args ...]
+    m bin <version>              Output bin path for <version>
+    m rm <version ...>           Remove the given version(s)
+    m --latest                   Output the latest mongodb version available
+    m --stable                   Output the latest stable mongodb version available
+    m ls                         Output the versions of mongodb available
+    m src <version>              Output the url for source used for the given <version> (useful if installed from source)
+    m pre <event> [script]       Declare one or list scripts to execute before <event> (scripts must use absolute paths)
+    m post <event> [script]      Declare one or list scripts to execute after <event> (scripts must use absolute paths)
+    m pre <event> rm [script]    Remove pre <event> script
+    m post <event> rm [script]   Remove post <event> script
 
-    Events:
+  Events:
 
-      change   Occurs when switching mongodb versions
-      install  Occurs when installing a previously uninstalled mongodb version
+    change   Occurs when switching mongodb versions
+    install  Occurs when installing a previously uninstalled mongodb version
 
-    Options:
+  Options:
 
-      -V, --version   Output current version of m
-      -h, --help      Display help information
+    -V, --version   Output current version of m
+    -h, --help      Display help information
 
-    Aliases:
+  Aliases:
 
-      which   bin
-      use     as
-      list    ls
-      custom  c
-      shell   s
+    which   bin
+    use     as
+    shard   sd
+    list    ls
+    custom  c
+    shell   s
+```
 
 ## Details
 
