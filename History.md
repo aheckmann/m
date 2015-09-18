@@ -1,4 +1,9 @@
 
+1.1.0 / 2015-09-18
+==================
+
+ * added; mongos support #19 from [sindbach](https://github.com/sindbach)
+
 1.0.1 / 2015-01-04
 ==================
 
