@@ -119,7 +119,9 @@ display_m_version() {
 check_current_version() {
   which mongo &> /dev/null
   if test $? -eq 0; then
-    active=`mongod --version | egrep -o '[0-9]+\.[0-9]+\.[0-9]+([-_\.][a-zA-Z0-9]+)?' | head -1`
+    active=`mongod --version | grep "version\s*v[0-9]" | egrep -o '[0-9]+\.[0-9]+\.[0-9]+([-_\.][a-zA-Z0-9]+)?' | head -1`
+    ent=`mongod --version | egrep "modules:\s*enterprise" | wc -l`
+    [[ $ent == *1 ]] && active="$active-ent"
   fi
 }
 
@@ -208,6 +210,14 @@ prompt_install() {
 install_bin() {
   local version=$1
   local config=$2
+  local comunity=1
+
+
+  # check if enterprise
+  if [[ $version == *-ent ]]; then
+    comunity=0
+    version=${version%????}
+  fi
 
   if ! test -z $config; then
     # config was passed, must build from source
@@ -243,9 +253,19 @@ install_bin() {
     sslbuild=$os
   fi
 
-  # check the download url
-  local tarball="mongodb-$sslbuild-$arch-$version.tgz"
-  local url="http://fastdl.mongodb.org/$os/$tarball"
+  # determine the download url
+  if [[ "$comunity" == 1 ]]; then
+    local tarball="mongodb-$sslbuild-$arch-$version.tgz"
+    local url="http://fastdl.mongodb.org/$os/$tarball"
+  else # enterprise version
+    if [[ "$os" == linux ]]; then
+      local tarball="mongodb-$os-$arch-enterprise-rhel70-$version.tgz" # for linux fetch the rhel7 tarball
+    else
+      local tarball="mongodb-$os-$arch-enterprise-$version.tgz"
+    fi
+    local url="http://downloads.10gen.com/$os/$tarball"
+    version="$version-ent"
+  fi
 
   if ! good $url; then
     # Fallback to generic build if not already using this
