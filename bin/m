@@ -6,7 +6,7 @@ VERSIONS_DIR=$M_DIR/versions
 BUILD_DIR_BASE=$M_DIR/mongo-
 
 # m version
-VERSION="1.1.0"
+VERSION="1.2.0"
 
 # log path
 LOGPATH="/tmp/m.log"
@@ -196,6 +196,7 @@ prompt_install() {
 #   linux32     http://fastdl.mongodb.org/linux/mongodb-linux-i686-2.2.2.tgz
 #   linux64     http://fastdl.mongodb.org/linux/mongodb-linux-x86_64-2.2.2.tgz
 #   osx64       http://fastdl.mongodb.org/osx/mongodb-osx-x86_64-2.2.2.tgz
+#   osx64 ssl   http://fastdl.mongodb.org/osx/mongodb-osx-ssl-x86_64-3.0.4.tgz
 #   solaris64   http://fastdl.mongodb.org/sunos5/mongodb-sunos5-x86_64-2.2.2.tgz
 #
 #   not supported
@@ -226,20 +227,40 @@ install_bin() {
     linux* )
       os=linux ;;
     darwin* )
-      os=osx ;;
+      os=osx
+      # SSL is included in MongoDB 3.0.4+ builds, but with different download path
+      if [[ "$version" =~ ^3.* ]]; then
+        sslbuild="osx-ssl"
+      fi
+      ;;
     sunos* )
       os=sunos5 ;;
     * )
       bin_not_supported $OS $version $config ;;
   esac
 
+  if [ -z ${sslbuild+x} ]; then
+    sslbuild=$os
+  fi
+
   # check the download url
-  local tarball="mongodb-$os-$arch-$version.tgz"
+  local tarball="mongodb-$sslbuild-$arch-$version.tgz"
   local url="http://fastdl.mongodb.org/$os/$tarball"
 
   if ! good $url; then
-    bin_not_supported $OS $version $config
-    exit 0;
+    # Fallback to generic build if not already using this
+    if [ "$sslbuild" != "$os" ]; then
+      tarball="mongodb-$os-$arch-$version.tgz"
+      url="http://fastdl.mongodb.org/$os/$tarball"
+      echo "Binary not available with SSL support. Checking url for generic (non-SSL) binaries."
+      if ! good $url; then
+        bin_not_supported $OS $version $config
+        exit 0;
+      fi
+    else
+       bin_not_supported $OS $version $config
+       exit 0;
+    fi
   fi
 
   log "installing binary"
