@@ -1,4 +1,9 @@
 
+1.2.0 / 2016-05-23
+==================
+
+ * change; Download OS X binaries with SSL support where available #21 [stennie](https://github.com/stennie)
+
 1.1.0 / 2015-09-18
 ==================
 
