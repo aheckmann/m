@@ -1,4 +1,9 @@
 
+1.2.1 / 2016-06-23
+==================
+
+ * fixed; check_current_version to display version 3.2.7 with OpenSSL correctly #22 [kevinadi](https://github.com/kevinadi)
+
 1.2.0 / 2016-05-23
 ==================
 
