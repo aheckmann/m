@@ -161,7 +161,7 @@ install_mongo() {
   if test -d $dir; then
     pre change
     cd $dir \
-      && cp -Rf $dir/bin/ $M_PREFIX/bin \
+      && cp -Rf $dir/bin/* $M_PREFIX/bin \
       && post change
   # install
   else
