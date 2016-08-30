@@ -210,12 +210,12 @@ prompt_install() {
 install_bin() {
   local version=$1
   local config=$2
-  local comunity=1
+  local community=1
 
 
   # check if enterprise
   if [[ $version == *-ent ]]; then
-    comunity=0
+    community=0
     version=${version%????}
   fi
 
@@ -254,7 +254,7 @@ install_bin() {
   fi
 
   # determine the download url
-  if [[ "$comunity" == 1 ]]; then
+  if [[ "$community" == 1 ]]; then
     local tarball="mongodb-$sslbuild-$arch-$version.tgz"
     local url="http://fastdl.mongodb.org/$os/$tarball"
   else # enterprise version
