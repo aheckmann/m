@@ -41,11 +41,15 @@ Install a version of mongodb from source (requires `scons`):
 
     $ m 2.2.3-rc0 source
 
+Install an enterprise release
+
+    $ m 3.2.8-ent
+
 ### Removing Binaries
 
 Remove some versions:
 
-    $ m rm 2.2.0-rc1 2.0.4 2.4.0-rc0
+    $ m rm 2.2.0-rc1 2.0.4 2.4.0-rc0 3.2.8-ent
 
 _Note that you cannot remove the actively running version. Change to a different version before removing._
 
