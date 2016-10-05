@@ -377,6 +377,7 @@ download() {
 
   # see if things are alright
   if test $? -gt 0; then
+    cd -
     cleanup "$builddir"
     printf "\033[31mError: installation failed\033[0m\n"
     printf "  MongoDB version $version does not exist,\n"
@@ -386,6 +387,7 @@ download() {
     printf "  error details.\n"
     exit 1
   fi
+  cd -
 }
 
 #
