@@ -530,7 +530,9 @@ list_versions() {
   local versions=""
   versions=`$GET 2> /dev/null http://dl.mongodb.org/dl/src/ \
     | egrep -o '[0-9]+\.[0-9]+\.[0-9]+([-_\.]rc[0-9]+)?' \
-    | sort -u -k 1,1n -k 2,2n -k 3,3 -t . \
+    | sort -u \
+    | sort -s -k 2.3n -t - \
+    | sort -s -k 1,1n -k 2,2n -k 3,3n -t . \
     | awk '{ print "  " $1 }'`
 
   for v in $versions; do
