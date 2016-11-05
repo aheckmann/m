@@ -1,4 +1,10 @@
 
+1.3.1 / 2016-11-05
+==================
+
+ * fixed; sort ordering of version numbers #25 from JamesKovacs
+ * fixed; getcwd warnings #24 from JamesKovacs
+
 1.3.0 / 2016-08-30
 ==================
 
