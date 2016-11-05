@@ -3,7 +3,7 @@
 ==================
 
  * fixed; sort ordering of version numbers #25 from JamesKovacs
- * fixed; getcwd warnings #24 from JamesKovacs
+ * fixed; getcwd warnings #24 from VictorDenisov
 
 1.3.0 / 2016-08-30
 ==================
