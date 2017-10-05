@@ -61,18 +61,18 @@ display_help() {
   Commands:
 
     m                            Output versions installed
-    m latest [config ...]        Install or activate the latest mongodb release
-    m stable [config ...]        Install or activate the latest stable mongodb release
-    m <version> [config ...]     Install and/or use mongodb <version>
-    m custom <version> <tarball> [config ...]  Install custom mongodb <tarball> with [args ...]
+    m latest [config ...]        Install or activate the latest MongoDB release
+    m stable [config ...]        Install or activate the latest stable MongoDB release
+    m <version> [config ...]     Install and/or use MongoDB <version>
+    m custom <version> <tarball> [config ...]  Install custom MongoDB <tarball> with [args ...]
     m use <version> [args ...]   Execute mongod <version> with [args ...]
     m shard <version> [args ...] Execute mongos <version> with [args ...]
     m shell <version> [args ...] Open a mongo shell <version> with [args ...]
     m bin <version>              Output bin path for <version>
     m rm <version ...>           Remove the given version(s)
-    m --latest                   Output the latest mongodb version available
-    m --stable                   Output the latest stable mongodb version available
-    m ls                         Output the versions of mongodb available
+    m --latest                   Output the latest MongoDB version available
+    m --stable                   Output the latest stable MongoDB version available
+    m ls                         Output the versions of MongoDB available
     m installed [--json]         Output installed versions available (optionally, in JSON format)
     m src <version>              Output the url for source used for the given <version>
                                    (useful if installed from source)
@@ -85,8 +85,8 @@ display_help() {
 
   Events:
 
-    change   Occurs when switching mongodb versions
-    install  Occurs when installing a previously uninstalled mongodb version
+    change   Occurs when switching MongoDB versions
+    install  Occurs when installing a previously uninstalled MongoDB version
 
   Options:
 
@@ -127,7 +127,7 @@ check_current_version() {
 }
 
 #
-# Display current mongodb --version
+# Display current MongoDB --version
 # and others installed.
 #
 
@@ -169,7 +169,7 @@ display_versions() {
 }
 
 #
-# Install mongodb <version> [config ...]
+# Install MongoDB <version> [config ...]
 #
 
 install_mongo() {
@@ -215,7 +215,7 @@ prompt_install() {
 }
 
 #
-# Install mongodb <version> binary
+# Install MongoDB <version> binary
 #
 #   template    http://fastdl.mongodb.org/$OS/mongodb-$OS-$ARCH-$VERSION.tgz
 #
@@ -327,7 +327,7 @@ install_bin() {
     && log "installation complete"
 }
 
-# Install mongodb <version> from source <tarball> [config ...]
+# Install MongoDB <version> from source <tarball> [config ...]
 #
 #   m custom 2.3.2 http://downloads.mongodb.org/src/mongodb-src-r2.3.2.tar.gz flags
 #
@@ -464,7 +464,7 @@ display_bin_path_for_version() {
 }
 
 #
-# Execute the given <version> of mongodb
+# Execute the given <version> of MongoDB
 # with [args ...]
 #
 
@@ -505,7 +505,7 @@ execute_shard_with_version() {
 
 #
 # Execute a script with the given shell of
-# mongodb <version> with [args...]
+# MongoDB <version> with [args...]
 #
 
 execute_shell_with_version() {
@@ -523,7 +523,7 @@ execute_shell_with_version() {
 }
 
 #
-# Display the latest mongodb release version.
+# Display the latest MongoDB release version.
 #
 
 display_latest_version() {
@@ -534,7 +534,7 @@ display_latest_version() {
 }
 
 #
-# Display the latest stable mongodb release version.
+# Display the latest stable MongoDB release version.
 #
 
 display_latest_stable_version() {
@@ -546,7 +546,7 @@ display_latest_stable_version() {
 }
 
 #
-# Display the available mongodb versions.
+# Display the available MongoDB versions.
 #
 
 list_versions() {
