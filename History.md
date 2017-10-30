@@ -1,3 +1,6 @@
+1.3.2
+=====
+ * added; `m installed [--json]` Output installed versions available (optionally, in JSON format) #28 [stennie](https://github.com/stennie)
 
 1.3.1 / 2016-11-05
 ==================
@@ -110,4 +113,3 @@
 ==================
 
   * initial release
-

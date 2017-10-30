@@ -36,7 +36,7 @@ Use or install the stable official release:
 Install a custom or patched version of mongodb from a tarball:
 
     $ m custom 2.1.2-me https://github.com/aheckmann/mongo/tarball/r2.1.2
-    
+
 Install a version of mongodb from source (requires `scons`):
 
     $ m 2.2.3-rc0 source
@@ -60,7 +60,7 @@ them directly by asking `m` for the binary path:
 
     $ m bin 2.0.7
     /usr/local/m/versions/2.0.7/bin/
-    
+
 Start up mongod 2.0.7 regardless of the active version:
 
     $ m use 2.0.7 --port 29000 --dbpath /data/2.0.7/
@@ -72,40 +72,40 @@ Execute a script with the 2.0.7 shell regardless of the active version:
 with flags:
 
     $ m s 2.0.7 --port 29000 --eval 1+1
-    
+
 When installing or changing the active version we might want to run custom scripts:
 
     $ m pre install /path/to/my/script
     $ m post install /path/to/script
     $ m pre change /path/to/my/script
     $ m post change /path/to/script
-    
+
 Multiple scripts may be added for any event. To add two `pre change` scripts:
 
     $ m pre change /path/to/script1
     $ m pre change /path/to/script2
-    
+
 Scripts are executed in the order they were added.
-    
+
 List all pre change hooks:
 
     $ m pre change
-    
+
     /path/to/script1
     /path/to/script2
-    
+
 List all post install hooks:
 
     $ m post install
-    
+
     /path/to/scriptA
     /path/to/scriptB
     /path/to/scriptC
-    
+
 To remove a post install hook:
 
     $ m post install rm /path/to/scriptB
-    
+
 Remove all post install hooks:
 
     $ m post install rm
@@ -132,6 +132,7 @@ Output from `m --help`:
     m --latest                   Output the latest mongodb version available
     m --stable                   Output the latest stable mongodb version available
     m ls                         Output the versions of mongodb available
+    m installed [--json]         Output installed versions available (optionally, in JSON format)
     m src <version>              Output the url for source used for the given <version> (useful if installed from source)
     m pre <event> [script]       Declare one or list scripts to execute before <event> (scripts must use absolute paths)
     m post <event> [script]      Declare one or list scripts to execute after <event> (scripts must use absolute paths)
@@ -174,4 +175,3 @@ Output from `m --help`:
 ## Inspiration
 
 Yes tj, this is nearly identical to [n](https://github.com/visionmedia/n). Huge thanks!
-
