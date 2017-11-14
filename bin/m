@@ -6,7 +6,7 @@ VERSIONS_DIR=$M_DIR/versions
 BUILD_DIR_BASE=$M_DIR/mongo-
 
 # m version
-VERSION="1.3.1"
+VERSION="1.3.2"
 
 # log path
 LOGPATH="/tmp/m.log"
@@ -61,18 +61,19 @@ display_help() {
   Commands:
 
     m                            Output versions installed
-    m latest [config ...]        Install or activate the latest mongodb release
-    m stable [config ...]        Install or activate the latest stable mongodb release
-    m <version> [config ...]     Install and/or use mongodb <version>
-    m custom <version> <tarball> [config ...]  Install custom mongodb <tarball> with [args ...]
+    m latest [config ...]        Install or activate the latest MongoDB release
+    m stable [config ...]        Install or activate the latest stable MongoDB release
+    m <version> [config ...]     Install and/or use MongoDB <version>
+    m custom <version> <tarball> [config ...]  Install custom MongoDB <tarball> with [args ...]
     m use <version> [args ...]   Execute mongod <version> with [args ...]
     m shard <version> [args ...] Execute mongos <version> with [args ...]
     m shell <version> [args ...] Open a mongo shell <version> with [args ...]
     m bin <version>              Output bin path for <version>
     m rm <version ...>           Remove the given version(s)
-    m --latest                   Output the latest mongodb version available
-    m --stable                   Output the latest stable mongodb version available
-    m ls                         Output the versions of mongodb available
+    m --latest                   Output the latest MongoDB version available
+    m --stable                   Output the latest stable MongoDB version available
+    m ls                         Output the versions of MongoDB available
+    m installed [--json]         Output installed versions available (optionally, in JSON format)
     m src <version>              Output the url for source used for the given <version>
                                    (useful if installed from source)
     m pre <event> [script]       Declare one or list scripts to execute before <event>
@@ -84,8 +85,8 @@ display_help() {
 
   Events:
 
-    change   Occurs when switching mongodb versions
-    install  Occurs when installing a previously uninstalled mongodb version
+    change   Occurs when switching MongoDB versions
+    install  Occurs when installing a previously uninstalled MongoDB version
 
   Options:
 
@@ -126,26 +127,49 @@ check_current_version() {
 }
 
 #
-# Display current mongodb --version
+# Display current MongoDB --version
 # and others installed.
 #
 
 display_versions() {
+  local option=$1; shift
+  local json=false
+
+  declare -a versions
+  versions=(`ls -1 $VERSIONS_DIR | sort -t. -k 1,1n -k 2,2n -k 3,3n`)
+  local last=${versions[${#versions[@]}-1]}
+
+  if test "$option" = "--json"; then
+    json=true
+    printf "["
+  fi
+
   check_current_version
-  local versions=`ls -1 $VERSIONS_DIR | sort -t. -k 1,1n -k 2,2n -k 3,3n`
-  for version in $versions; do
+  for version in ${versions[@]}; do
     local dir="$VERSIONS_DIR/$version"
     local config=`test -f $dir/.config && cat $dir/.config`
-    if test "$version" = "$active"; then
-      printf "  \033[32mο\033[0m $version \033[90m$config\033[0m\n"
+
+    if $json; then
+      printf "\n  {\n    \"name\" : \"$version\",\n    \"path\" : \"$dir/bin/\" \n  }"
+      if [ "$version" != "$last" ]; then
+         printf ","
+      fi
     else
-      printf "    $version \033[90m$config\033[0m\n"
+      if [ "$version" = "$active" ]; then
+        printf "  \033[32mο\033[0m $version \033[90m$config\033[0m\n"
+      else
+        printf "    $version \033[90m$config\033[0m\n"
+      fi
     fi
   done
+
+  if $json; then
+    printf "\n]\n"
+  fi
 }
 
 #
-# Install mongodb <version> [config ...]
+# Install MongoDB <version> [config ...]
 #
 
 install_mongo() {
@@ -191,7 +215,7 @@ prompt_install() {
 }
 
 #
-# Install mongodb <version> binary
+# Install MongoDB <version> binary
 #
 #   template    http://fastdl.mongodb.org/$OS/mongodb-$OS-$ARCH-$VERSION.tgz
 #
@@ -303,7 +327,7 @@ install_bin() {
     && log "installation complete"
 }
 
-# Install mongodb <version> from source <tarball> [config ...]
+# Install MongoDB <version> from source <tarball> [config ...]
 #
 #   m custom 2.3.2 http://downloads.mongodb.org/src/mongodb-src-r2.3.2.tar.gz flags
 #
@@ -440,7 +464,7 @@ display_bin_path_for_version() {
 }
 
 #
-# Execute the given <version> of mongodb
+# Execute the given <version> of MongoDB
 # with [args ...]
 #
 
@@ -481,7 +505,7 @@ execute_shard_with_version() {
 
 #
 # Execute a script with the given shell of
-# mongodb <version> with [args...]
+# MongoDB <version> with [args...]
 #
 
 execute_shell_with_version() {
@@ -499,7 +523,7 @@ execute_shell_with_version() {
 }
 
 #
-# Display the latest mongodb release version.
+# Display the latest MongoDB release version.
 #
 
 display_latest_version() {
@@ -510,7 +534,7 @@ display_latest_version() {
 }
 
 #
-# Display the latest stable mongodb release version.
+# Display the latest stable MongoDB release version.
 #
 
 display_latest_stable_version() {
@@ -522,7 +546,7 @@ display_latest_stable_version() {
 }
 
 #
-# Display the available mongodb versions.
+# Display the available MongoDB versions.
 #
 
 list_versions() {
@@ -700,6 +724,7 @@ else
     case $1 in
       -V|--version) display_m_version ;;
       -h|--help|help) display_help ;;
+      installed) display_versions $2; exit ;;
       --latest) display_latest_version $2; exit ;;
       --stable) display_latest_stable_version $2; exit ;;
       bin|which) display_bin_path_for_version $2; exit ;;

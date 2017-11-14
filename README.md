@@ -10,9 +10,9 @@ or
 
     $ git clone git://github.com/aheckmann/m.git && cd m && make install
 
-### Installing Binaries
+### Downloading MongoDB Binaries
 
-The version given becomes the active MongoDB binary once installation is complete. With `m` you can install mutiple versions of MongoDB and switch between them.
+Specify a MongoDB server version to try download a binary package (if available for your current O/S) or switch to a previously downloaded copy. After `m` successfully downloads or switches to a specified version of MongoDB, those binaries will become the default in the install path (typically `/usr/local/bin/`; see _Details_ below for more information).
 
     $ m 3.2.16
     $ m 3.4.9
@@ -21,45 +21,48 @@ List installed binaries:
 
     $ m
 
-      3.2.15
-    ο 3.2.16
-      3.4.9
+      3.2.16
+    ο 3.4.9
+      3.6.0-rc1
 
-Use or install the latest official release:
+Use or download the latest official release:
 
     $ m latest
 
-Use or install the stable official release:
+Use or download the stable official release:
 
     $ m stable
 
-Install a custom or patched version of MongoDB from a tarball:
+Download a custom or patched version of MongoDB from a tarball:
 
-    $ m custom 3.5.13-me https://github.com/aheckmann/mongo/tarball/r3.5.13
+    $ m custom 3.5.13-me https://github.com/mongodb/mongo/tarball/r3.5.13
 
-Install a version of MongoDB from source (requires `scons`):
+Download and build a version of MongoDB from source (requires `scons`):
 
-    $ m 3.4.9-rc0 source
+    $ m 3.6.0-rc1 source
 
-Install an Enterprise release
+Download an Enterprise release:
 
     $ m 3.4.9-ent
+
 ### Removing Binaries
 
-Remove some previous installed versions:
+Remove some previously installed versions:
 
-    $ m rm 3.2.15 3.4.9-rc0 3.4.9-ent
+    $  m rm 3.2.16 3.5.13-me
 
-_Note that you cannot remove the actively running version. Change to a different version before removing._
+_NOTE: you cannot remove the actively running version. Change to a different version before removing._
 
 ### Binary Usage
 
-When running multiple versions of MongoDB, we can target them directly by asking `m` for the binary path:
+Multiple versions of MongoDB can be downloaded and targeted directly.
+
+Ask `m` for the binary path for a specific version that has already been downloaded:
 
     $ m bin 3.4.9
     /usr/local/m/versions/3.4.9/bin/
 
-Start up `mongod` 3.4.9 regardless of the active version:
+Start up mongod 3.4.9 regardless of the active version:
 
     $ m use 3.4.9 --port 29000 --dbpath /data/3.4.9/
 
@@ -67,11 +70,11 @@ Execute a script with the 3.4.9 `mongo` shell regardless of the active version:
 
     $ m shell 3.4.9 some.js
 
-with flags:
+Execute a script with a 3.4.9 `mongo` shell and some additional flags:
 
-    $ m s 3.4.9 --port 29000 --eval 1+1
+    $ m shell 3.4.9 --port 29000 --norc
 
-When installing or changing the active version we might want to run custom scripts:
+When installing or changing the active version you might want to run custom scripts:
 
     $ m pre install /path/to/my/script
     $ m post install /path/to/script
@@ -104,7 +107,7 @@ To remove a post install hook:
 
     $ m post install rm /path/to/scriptB
 
-Remove all post install hooks:
+To remove all post install hooks:
 
     $ m post install rm
 
@@ -130,6 +133,7 @@ Output from `m --help`:
     m --latest                   Output the latest MongoDB version available
     m --stable                   Output the latest stable MongoDB version available
     m ls                         Output the versions of MongoDB available
+    m installed [--json]         Output installed versions available (optionally, in JSON format)
     m src <version>              Output the url for source used for the given <version> (useful if installed from source)
     m pre <event> [script]       Declare one or list scripts to execute before <event> (scripts must use absolute paths)
     m post <event> [script]      Declare one or list scripts to execute after <event> (scripts must use absolute paths)
@@ -158,12 +162,10 @@ Output from `m --help`:
 
 ## Details
 
- `m` by default installs MongoDB to _/usr/local/m/versions_, from
- which it can see what you have currently installed, and activate previously installed versions of MongoDB when `m <version>` is invoked again.
+ By default `m` downloads MongoDB binaries to _/usr/local/m/versions_ in subdirectories named after the release version (3.2.16, 3.4.9, ...). Activated MongoDB binaries are copied to the `bin` directory in _/usr/local_.  To alter where `m` operates, export the __M_PREFIX__ environment variable with your preferred path prefix.
 
- Activated MongoDB versions are then installed to the prefix _/usr/local_, which may be altered via the __M_PREFIX__ environment variable.
-
- To alter where `m` operates simply export __M_PREFIX__ to whatever you prefer.
+ Previously downloaded versions of MongoDB can be activated using `m <version>` or
+selected using of the variations in the _Binary Usage_ section above. 
 
 ## License
 
