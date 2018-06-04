@@ -263,7 +263,7 @@ install_bin() {
     darwin* )
       os=osx
       # SSL is included in MongoDB 3.0.4+ builds, but with different download path
-      if [[ "$version" =~ ^3.* ]]; then
+      if [[ "$version" =~ ^[34].* ]]; then
         sslbuild="osx-ssl"
       fi
       ;;
