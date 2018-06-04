@@ -1,3 +1,7 @@
+1.3.3 / 2018-06-04
+==================
+ * fixed; MongoDB 4.0.0-rc# macOS binaries not found #32 [stennie](https://github.com/stennie)
+
 1.3.2 / 2017-11-01
 ==================
  * added; `m installed [--json]` Output installed versions available (optionally, in JSON format) #28 [stennie](https://github.com/stennie)

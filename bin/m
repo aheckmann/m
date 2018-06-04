@@ -6,7 +6,7 @@ VERSIONS_DIR=$M_DIR/versions
 BUILD_DIR_BASE=$M_DIR/mongo-
 
 # m version
-VERSION="1.3.2"
+VERSION="1.3.3"
 
 # log path
 LOGPATH="/tmp/m.log"
