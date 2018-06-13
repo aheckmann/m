@@ -205,11 +205,10 @@ install_mongo() {
 prompt_install() {
   echo $1
   while true; do
-    read -p "Installation may take a while. Would you like to proceed? [y/n] " yn
+    read -p "Installation may take a while. Would you like to proceed? [Y/n] " yn
     case $yn in
-      [Yy]* ) break;;
-      [Nn]* ) echo "Aborted."; exit 0;;
-      * ) echo "Please answer yes or no.";;
+      [Nn]* ) echo "Aborted."; exit ;;
+      * ) break;;
     esac
   done
 }
