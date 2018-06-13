@@ -137,6 +137,10 @@ display_versions() {
 
   declare -a versions
   versions=(`ls -1 $VERSIONS_DIR | sort -t. -k 1,1n -k 2,2n -k 3,3n`)
+  if test -z "$versions"; then
+    echo No installed versions
+    return
+  fi
   local last=${versions[${#versions[@]}-1]}
 
   if test "$option" = "--json"; then
