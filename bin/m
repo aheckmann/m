@@ -275,7 +275,6 @@ install_bin() {
   local config=$2
   local community=1
 
-
   # check if enterprise
   if [[ $version == *-ent ]]; then
     community=0
@@ -322,7 +321,29 @@ install_bin() {
     local url="http://fastdl.mongodb.org/$os/$tarball"
   else # enterprise version
     if [[ "$os" == linux ]]; then
-      local tarball="mongodb-$os-$arch-enterprise-rhel70-$version.tgz" # for linux fetch the rhel7 tarball
+      # for linux fetch the rhel7 tarball by default
+      local dist=rhel70
+      if test -e /etc/debian_version; then
+        local debian_version=`cat /etc/debian_version`
+        case "$debian_version" in
+          wheezy* )
+            debian_versions="71"
+            ;;
+          jessie* )
+            debian_versions="81 71"
+            ;;
+          * )
+            debian_versions="92 81 71"
+            ;;
+        esac
+        for debian_version in $debian_versions; do
+          if good "http://downloads.10gen.com/$os/mongodb-$os-$arch-enterprise-debian$debian_version-$version.tgz"; then
+            dist=debian$debian_version
+            break
+          fi
+        done
+      fi
+      local tarball="mongodb-$os-$arch-enterprise-$dist-$version.tgz"
     else
       local tarball="mongodb-$os-$arch-enterprise-$version.tgz"
     fi
