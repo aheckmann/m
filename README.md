@@ -45,6 +45,10 @@ Download an Enterprise release:
 
     $ m 3.4.9-ent
 
+Select a MongoDB version without prompting for confirmation if a download is required:
+
+    $ yes | m 4.0.0
+
 ### Removing Binaries
 
 Remove some previously installed versions:
@@ -62,7 +66,7 @@ Ask `m` for the binary path for a specific version that has already been downloa
     $ m bin 3.4.9
     /usr/local/m/versions/3.4.9/bin/
 
-Start up mongod 3.4.9 regardless of the active version:
+Start up `mongod` 3.4.9 regardless of the active version:
 
     $ m use 3.4.9 --port 29000 --dbpath /data/3.4.9/
 
