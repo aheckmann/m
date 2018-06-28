@@ -443,12 +443,15 @@ remove_versions() {
   while test $# -ne 0; do
     local version=${1#v}
     if test "$version" = "$active"; then
-      printf "\033[33mSKIPPING\033[0m active version $version. "
-      printf "Please change versions before removing.\n"
-    else
-      rm -rf $VERSIONS_DIR/$version
-      echo "removed $version"
+      printf "\033[33mWARNING\033[0m $version is the active version!\n"
+      read -p "Are you sure you want to remove this? [y/N] " yn
+      case $yn in
+        [Yy]* ) ;;
+        * )  printf "\033[33mSKIPPING\033[0m $version "; break;;
+      esac
     fi
+    rm -rf $VERSIONS_DIR/$version
+    echo "Removed $version"
 
     shift
   done
