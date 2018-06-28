@@ -8,9 +8,6 @@ BUILD_DIR_BASE=$M_DIR/mongo-
 # m version
 VERSION="1.3.3"
 
-# log path
-LOGPATH="/tmp/m.log"
-
 #
 # Log the given <msg ...>
 #
@@ -397,12 +394,14 @@ download() {
   local url=$2
   local builddir=$3
 
+  local logpath=`mktemp /tmp/m.XXXXXX` || exit 1
+
   # create build directory
   mkdir -p $builddir
 
   # fetch and unpack
   cd $builddir \
-    && $GET $url | tar xz --strip-components=1 > $LOGPATH 2>&1
+    && $GET $url | tar xz --strip-components=1 > $logpath 2>&1
 
   # see if things are alright
   if test $? -gt 0; then
@@ -412,9 +411,11 @@ download() {
     printf "  MongoDB version $version does not exist,\n"
     printf "  m failed to fetch the tarball,\n"
     printf "  or tar failed. Try a different\n"
-    printf "  version or view $LOGPATH to view\n"
+    printf "  version or view $logpath to view\n"
     printf "  error details.\n"
     exit 1
+  else
+    rm $logpath
   fi
   cd -
 }
