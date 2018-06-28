@@ -150,7 +150,7 @@ display_versions() {
   check_current_version
   for version in ${versions[@]}; do
     local dir="$VERSIONS_DIR/$version"
-    local config=`test -f $dir/.config && cat $dir/.config`
+    local config=`test -f "$dir"/.config && cat "$dir"/.config`
 
     if $json; then
       printf "\n  {\n    \"name\" : \"$version\",\n    \"path\" : \"$dir/bin/\" \n  }"
@@ -190,7 +190,7 @@ install_mongo() {
   if test -d $dir; then
     pre change
     cd $dir \
-      && cp -Rf $dir/bin/* $M_PREFIX/bin \
+      && ln -fs $dir/bin/* $M_PREFIX/bin \
       && post change
   # install
   else
