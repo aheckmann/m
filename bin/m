@@ -499,7 +499,7 @@ remove_versions() {
 
 display_bin_path_for_version() {
   test -z $1 && abort "version required"
-  local version=${1#v}
+  local version=$(get_latest_installed_version ${1#v})
   local bin=$VERSIONS_DIR/$version/bin
   if test -f "$bin/mongo"; then
     echo $bin
