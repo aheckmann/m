@@ -24,6 +24,21 @@ abort() {
   printf "\033[31mError: $@\033[0m\n" && exit 1
 }
 
+#
+# Exit with advice for version that isn't available
+#
+
+abort_not_installed() {
+  local version=$1
+
+  printf "\033[31mError: requested MongoDB version is not installed\033[0m\n"
+  if [[ ! -z "$version" ]]; then
+    printf "Try 'm $version' to download and activate.\n"
+  fi
+  exit 1
+}
+
+
 # setup
 
 test -d $VERSIONS_DIR || mkdir -p $VERSIONS_DIR
@@ -58,8 +73,9 @@ display_help() {
   Commands:
 
     m                            Output versions installed
-    m latest [config ...]        Install or activate the latest MongoDB release
     m stable [config ...]        Install or activate the latest stable MongoDB release
+    m latest [config ...]        Install or activate the latest MongoDB release (including dev & RCs)
+    m X.Y                        Install or activate the latest patch release for MongoDB X.Y (eg. 3.6)
     m <version> [config ...]     Install and/or use MongoDB <version>
     m custom <version> <tarball> [config ...]  Install custom MongoDB <tarball> with [args ...]
     m use <version> [args ...]   Execute mongod <version> with [args ...]
@@ -67,8 +83,10 @@ display_help() {
     m shell <version> [args ...] Open a mongo shell <version> with [args ...]
     m bin <version>              Output bin path for <version>
     m rm <version ...>           Remove the given version(s)
-    m --latest                   Output the latest MongoDB version available
     m --stable                   Output the latest stable MongoDB version available
+    m --stable X.Y                .. for release series X.Y (eg. 3.6)
+    m --latest                   Output the latest MongoDB version available (including dev & RCs)
+    m --latest X.Y                .. for release series X.Y (eg. 3.6)
     m ls                         Output the versions of MongoDB available
     m installed [--json]         Output installed versions available (optionally, in JSON format)
     m src <version>              Output the url for source used for the given <version>
@@ -185,10 +203,28 @@ install_mongo() {
     exit 0;
   fi
 
+  # shorthand for finding latest in a release series (eg: "3.6", "3.6-ent")
+  if [[ $version =~ ^([0-9]\.[0-9]+)(-ent)?$ ]]; then
+    local series="${BASH_REMATCH[1]}"
+    local ent="${BASH_REMATCH[2]}"
+
+    printf "Checking for latest release of MongoDB $version\n"
+    version=`$GET 2> /dev/null http://dl.mongodb.org/dl/src/ \
+      | egrep -o "$series\.[0-9]+([-_\.]rc[0-9]+)?" \
+      | sort -u -k 1,1n -k 2,2n -k 3,3n -t . \
+      | tail -n1`
+    if [[ -z "$version" ]]; then
+       abort "Could not find any releases for the requested version\n"
+    fi
+    # append the enterprise label if included in the original version
+    version="$version$ent"
+  fi
+
   # activate
   local dir=$VERSIONS_DIR/$version
   if test -d $dir; then
     pre change
+    printf "Activating $version\n"
     cd $dir \
       && ln -fs $dir/bin/* $M_PREFIX/bin \
       && post change
@@ -468,18 +504,14 @@ display_bin_path_for_version() {
   if test -f "$bin/mongo"; then
     echo $bin
   else
-    abort "$1 is not installed"
+    abort_not_installed $1
   fi
 }
 
 #
-# Execute the given <version> of MongoDB
-# with [args ...]
-#
-
-execute_with_version() {
-  test -z $1 && abort "version required"
-  local version=${1#v}
+# Get the latest installed version in a MongoDB release series (eg: "3.6", "3.6-ent")
+get_latest_installed_version() {
+  local version=$1
 
   case $version in
     latest)
@@ -490,6 +522,35 @@ execute_with_version() {
       ;;
   esac
 
+  if [[ $version =~ ^([0-9]\.[0-9]+)(-ent)?$ ]]; then
+    local series="${BASH_REMATCH[1]}"
+    local ent="${BASH_REMATCH[2]}"
+
+    version=`find ${VERSIONS_DIR} -type d -depth 1 \
+      | egrep -o "$series\.[0-9]+([-_\.]rc[0-9]+)?" \
+      | sort -u -k 1,1n -k 2,2n -k 3,3n -t . \
+      | tail -n1`
+    if [[ -z "$version" ]]; then
+       echo ""
+    else
+       # append the enterprise label if included in the original version
+       version="$version$ent"
+       echo "$version"
+    fi
+  else
+    echo "$version"
+  fi
+}
+
+#
+# Execute the given <version> of MongoDB
+# with [args ...]
+#
+
+execute_with_version() {
+  test -z $1 && abort "version required"
+
+  local version=$(get_latest_installed_version ${1#v})
   local bin=$VERSIONS_DIR/$version/bin/mongod
 
   shift # remove version
@@ -497,7 +558,7 @@ execute_with_version() {
   if test -f $bin; then
     $bin $@
   else
-    abort "$version is not installed"
+    abort_not_installed $version
   fi
 }
 
@@ -508,7 +569,7 @@ execute_with_version() {
 
 execute_shard_with_version() {
   test -z $1 && abort "version required"
-  local version=${1#v}
+  local version=$(get_latest_installed_version ${1#v})
   local bin=$VERSIONS_DIR/$version/bin/mongos
 
   shift # remove version
@@ -516,10 +577,9 @@ execute_shard_with_version() {
   if test -f $bin; then
     $bin $@
   else
-    abort "$version is not installed"
+    abort_not_installed $version
   fi
 }
-
 
 
 #
@@ -529,7 +589,7 @@ execute_shard_with_version() {
 
 execute_shell_with_version() {
   test -z $1 && abort "version required"
-  local version=${1#v}
+  local version=$(get_latest_installed_version ${1#v})
   local bin=$VERSIONS_DIR/$version/bin/mongo
 
   shift # remove version
@@ -537,7 +597,7 @@ execute_shell_with_version() {
   if test -f $bin; then
     $bin $@
   else
-    abort "$version is not installed"
+    abort_not_installed $version
   fi
 }
 
@@ -546,10 +606,23 @@ execute_shell_with_version() {
 #
 
 display_latest_version() {
-  $GET 2> /dev/null http://dl.mongodb.org/dl/src/ \
-    | egrep -o '[0-9]+\.[0-9]+\.[0-9]+([-_\.]rc[0-9]+)?' \
-    | sort -u -k 1,1n -k 2,2n -k 3,3n -t . \
-    | tail -n1
+  local version=$1
+
+  if [[ $version =~ ^[0-9]\.[0-9]+$ ]]; then
+    $GET 2> /dev/null http://dl.mongodb.org/dl/src/ \
+      | egrep -o "$version\.[0-9]+([-_\.]rc[0-9]+)?" \
+      | sort -u -k 1,1n -k 2,2n -k 3,3n -t . \
+      | tail -n1
+  else
+    if [[ ! -z "$version" ]]; then
+       abort "Version [$version] does not match the MongoDB release series format (X.Y)"
+    else
+      $GET 2> /dev/null http://dl.mongodb.org/dl/src/ \
+        | egrep -o '[0-9]+\.[0-9]+\.[0-9]+([-_\.]rc[0-9]+)?' \
+        | sort -u -k 1,1n -k 2,2n -k 3,3n -t . \
+        | tail -n1
+    fi
+  fi
 }
 
 #
@@ -557,11 +630,24 @@ display_latest_version() {
 #
 
 display_latest_stable_version() {
-  $GET 2> /dev/null http://dl.mongodb.org/dl/src/ \
-    | egrep -o '[0-9]+\.[02468]+\.[0-9]+\.zip' \
-    | sed s/.zip$// \
-    | sort -u -k 1,1n -k 2,2n -k 3,3n -t . \
-    | tail -n1
+  local version=$1
+
+  if [[ $version =~ ^[0-9]\.[02468]+$ ]]; then
+    $GET 2> /dev/null http://dl.mongodb.org/dl/src/ \
+      | egrep -o "$version\.[0-9]+" \
+      | sort -u -k 1,1n -k 2,2n -k 3,3n -t . \
+      | tail -n1
+  else
+    if [[ ! -z "$version" ]]; then
+       abort "Version [$version] does not match a stable MongoDB release series (X.Y)"
+    else
+      $GET 2> /dev/null http://dl.mongodb.org/dl/src/ \
+        | egrep -o '[0-9]+\.[02468]+\.[0-9]+\.zip' \
+        | sed s/.zip$// \
+        | sort -u -k 1,1n -k 2,2n -k 3,3n -t . \
+        | tail -n1
+      fi
+  fi
 }
 
 #
