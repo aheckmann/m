@@ -190,7 +190,7 @@ Output from `m --help`:
 
 ## Details
 
- By default `m` downloads MongoDB binaries to _/usr/local/m/versions_ in subdirectories named after the release version (3.2.16, 3.4.9, ...). Activated MongoDB binaries are copied to the `bin` directory in _/usr/local_.  To alter where `m` operates, export the __M_PREFIX__ environment variable with your preferred path prefix.
+ By default `m` downloads MongoDB binaries to _/usr/local/m/versions_ in subdirectories named after the release version (3.2.16, 3.4.9, ...). Activated MongoDB binaries are symlinked into the `bin` directory in _/usr/local_.  To alter where `m` operates, export the __M_PREFIX__ environment variable with your preferred path prefix.
 
 Previously downloaded versions of MongoDB can be activated using `m <version>` or
 selected using of the variations in the _Binary Usage_ section above. 
@@ -203,3 +203,6 @@ selected using of the variations in the _Binary Usage_ section above.
 
 Yes tj, this is nearly identical to [n](https://github.com/visionmedia/n). Huge thanks!
 
+## Disclaimer
+
+This software is not supported by MongoDB, Inc. under any of their commercial support subscriptions or otherwise. Any usage of `m` is at your own risk. Bug reports, feature suggestions, and questions can be posted in the [Issues](https://github.com/aheckmann/m/issues) section on GitHub.
