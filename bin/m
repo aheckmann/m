@@ -6,7 +6,7 @@ VERSIONS_DIR=$M_DIR/versions
 BUILD_DIR_BASE=$M_DIR/mongo-
 
 # m version
-VERSION="1.3.3"
+VERSION="1.4.0"
 
 #
 # Log the given <msg ...>
@@ -499,7 +499,7 @@ remove_versions() {
 
 display_bin_path_for_version() {
   test -z $1 && abort "version required"
-  local version=${1#v}
+  local version=$(get_latest_installed_version ${1#v})
   local bin=$VERSIONS_DIR/$version/bin
   if test -f "$bin/mongo"; then
     echo $bin
