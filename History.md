@@ -1,3 +1,16 @@
+1.4.0 / 2018-06-30
+==================
+ * fixed; Insecure temporary file use #38
+ * fixed; Handle the case of no installed versions when listing installed versions #35
+ * changed; Default installation prompt to yes #36
+ * changed; Use symlinks instead of copying binaries #46
+ * added; Prompt to allow removing the current MongoDB version #30
+ * added; Support aliases for MongoDB release series (for example: `m 3.6`) #34
+ * added; `m use stable` and `m use latest` aliases #37
+ * added; note about using `yes` for download without confirmation  #27
+
+Thanks to [stennie](https://github.com/stennie) and [Oleg Pudeyev](https://github.com/p) for their contributions.
+
 1.3.3 / 2018-06-04
 ==================
  * fixed; MongoDB 4.0.0-rc# macOS binaries not found #32 [stennie](https://github.com/stennie)
