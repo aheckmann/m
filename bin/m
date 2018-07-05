@@ -110,12 +110,13 @@ display_help() {
 
   Aliases:
 
-    which   bin
-    use     as
-    shard   sd
-    list    ls
-    custom  c
-    shell   s
+    which      bin
+    use        as, mongod
+    shard      sd, mongos
+    list       ls
+    installed  lls
+    custom     c
+    shell      s, sh, mongo
 
 help
   exit 0
@@ -829,13 +830,13 @@ else
     case $1 in
       -V|--version) display_m_version ;;
       -h|--help|help) display_help ;;
-      installed) display_versions $2; exit ;;
+      lls|installed) display_versions $2; exit ;;
       --latest) display_latest_version $2; exit ;;
       --stable) display_latest_stable_version $2; exit ;;
       bin|which) display_bin_path_for_version $2; exit ;;
-      as|use) shift; execute_with_version $@; exit ;;
-      sd|shard) shift; execute_shard_with_version $@; exit ;;
-      s|shell) shift; execute_shell_with_version $@; exit ;;
+      as|use|mongod) shift; execute_with_version $@; exit ;;
+      sd|shard|mongos) shift; execute_shard_with_version $@; exit ;;
+      s|sh|shell|mongo) shift; execute_shell_with_version $@; exit ;;
       rm) shift; remove_versions $@; exit ;;
       latest) install_mongo `$0 --latest`; exit ;;
       stable) install_mongo `$0 --stable`; exit ;;

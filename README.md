@@ -179,13 +179,13 @@ Output from `m --help`:
     -h, --help      Display help information
 
   Aliases:
-
-    which   bin
-    use     as
-    shard   sd
-    list    ls
-    custom  c
-    shell   s
+    which      bin
+    use        as, mongod
+    shard      sd, mongos
+    list       ls
+    installed  lls
+    custom     c
+    shell      s, sh, mongo
 ```
 
 ## Details
@@ -201,7 +201,7 @@ selected using of the variations in the _Binary Usage_ section above.
 
 ## Inspiration
 
-Yes tj, this is nearly identical to [n](https://github.com/visionmedia/n). Huge thanks!
+Yes tj, this is nearly identical to [n](https://github.com/tj/n). Huge thanks!
 
 ## Disclaimer
 
