@@ -4,11 +4,17 @@
 
 ## Installation
 
+`m` is a bash script which can be installed & updated via `npm` for convenience:
+
     $ npm install -g m
 
-or
+or installed by cloning the GitHub repo and running `make install`:
 
     $ git clone git://github.com/aheckmann/m.git && cd m && make install
+
+or fetched via `wget` and copied to a location of your choice:
+
+    $ wget https://raw.githubusercontent.com/aheckmann/m/master/bin/m && chmod +x ./m
 
 ### Downloading MongoDB Binaries
 
