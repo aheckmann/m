@@ -315,6 +315,44 @@ install_bin() {
     sslbuild=$os
   fi
 
+  local DISTRO="`lsb_release -si`-`lsb_release -sr`"
+  local distro=`echo $DISTRO | tr '[:upper:]' '[:lower:]'`
+  # Different versions of MongoDB have builds for different distributions.
+  # As m allows installing old MongoDB versions, we can look for
+  # binaries for distributions that the latest MongoDB release is not
+  # built for. Conversely, an old MongoDB version does not have to have
+  # builds available for distributions that the latest version supports.
+  #
+  # The logic generally is to start with the correct distribution, then try
+  # one version older and one version newer. This should handle most cases
+  # reasonably well.
+  case "$distro" in
+    debian-6.*)
+      distros="debian71 debian81" ;;
+    debian-7.*)
+      distros="debian71 debian81" ;;
+    debian-8.*)
+      distros="debian81 debian71 debian92" ;;
+    debian-9.*)
+      distros="debian92 debian81 debian71" ;;
+    debian-*)
+      distros="debian92 debian81 debian71" ;;
+    
+    ubuntu-12.*)
+      distros="ubuntu1204 ubuntu1404" ;;
+    ubuntu-14.*)
+      distros="ubuntu1404 ubuntu1204 ubuntu1604" ;;
+    ubuntu-16.*)
+      distros="ubuntu1604 ubuntu1404 ubuntu1204" ;;
+    ubuntu-18.*)
+      distros="ubuntu1604 ubuntu1404 ubuntu1204" ;;
+    ubuntu-*)
+      distros="ubuntu1604 ubuntu1404 ubuntu1204" ;;
+    
+    *)
+      distros="" ;;
+  esac
+
   # determine the download url
   if [[ "$community" == 1 ]]; then
     local tarball="mongodb-$sslbuild-$arch-$version.tgz"
