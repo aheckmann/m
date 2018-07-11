@@ -1,3 +1,9 @@
+1.4.1 / 2018-07-11
+==================
+ * Add aliases aligned with standard binary names: `m mongo|mongod|mongos <version>`
+ * Add `m sh` as an alias for `m shell|mongo <version>`
+ * Add `m lls` as an alias for `m installed`
+
 1.4.0 / 2018-06-30
 ==================
  * fixed; Insecure temporary file use #38
