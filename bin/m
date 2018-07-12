@@ -428,6 +428,13 @@ install_bin() {
   # determine the download url
   if [[ "$community" == 1 ]]; then
     local tarball="mongodb-$sslbuild-$arch-$version.tgz"
+    # shadowing earlier $distro
+    for distro in $distros; do
+      if good "http://fastdl.mongodb.org/$os/mongodb-$sslbuild-$arch-$distro-$version.tgz"; then
+        tarball="mongodb-$sslbuild-$arch-$distro-$version.tgz"
+        break
+      fi
+    done
     local url="http://fastdl.mongodb.org/$os/$tarball"
   else # enterprise version
     if [[ "$os" == linux ]]; then
