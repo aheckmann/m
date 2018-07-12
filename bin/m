@@ -317,7 +317,7 @@ install_bin() {
 
   local distro_id= distro_version=
   if lsb_release >/dev/null 2>&1; then
-    # Debian/Ubuntu
+    # Debian/Ubuntu, also RHEL proper but not centos
     distro_id=`lsb_release -si`
     distro_version=`lsb_release -sr`
     if test "$distro_version" = testing; then
@@ -433,26 +433,13 @@ install_bin() {
     if [[ "$os" == linux ]]; then
       # for linux fetch the rhel7 tarball by default
       local dist=rhel70
-      if test -e /etc/debian_version; then
-        local debian_version=`cat /etc/debian_version`
-        case "$debian_version" in
-          wheezy* )
-            debian_versions="71"
-            ;;
-          jessie* )
-            debian_versions="81 71"
-            ;;
-          * )
-            debian_versions="92 81 71"
-            ;;
-        esac
-        for debian_version in $debian_versions; do
-          if good "http://downloads.10gen.com/$os/mongodb-$os-$arch-enterprise-debian$debian_version-$version.tgz"; then
-            dist=debian$debian_version
-            break
-          fi
-        done
-      fi
+      # shadowing earlier $distro
+      for distro in $distros; do
+        if good "http://downloads.10gen.com/$os/mongodb-$os-$arch-enterprise-$distro-$version.tgz"; then
+          dist=$distro
+          break
+        fi
+      done
       local tarball="mongodb-$os-$arch-enterprise-$dist-$version.tgz"
     else
       local tarball="mongodb-$os-$arch-enterprise-$version.tgz"
