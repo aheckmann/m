@@ -410,7 +410,12 @@ install_bin() {
       distros="suse12 suse11 suse10" ;;
     
     amzn-*)
-      distros="amzn64" ;;
+      if test "$community" = 1; then
+        distros=amazon
+      else
+        distros="amzn64"
+      fi
+      ;;
     
     rhel-5*)
       distros="rhel57" ;;
