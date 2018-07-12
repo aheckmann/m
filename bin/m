@@ -366,7 +366,7 @@ install_bin() {
     distro_id=rhel
   fi
   
-  local distro=$distro_id:$distro_version
+  local distro=$distro_id-$distro_version
   
   # Different versions of MongoDB have builds for different distributions.
   # As m allows installing old MongoDB versions, we can look for
