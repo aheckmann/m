@@ -378,24 +378,24 @@ install_bin() {
   # one version older and one version newer. This should handle most cases
   # reasonably well.
   case "$distro" in
-    debian-6.*)
+    debian-6*)
       distros="debian71 debian81" ;;
-    debian-7.*)
+    debian-7*)
       distros="debian71 debian81" ;;
-    debian-8.*)
+    debian-8*)
       distros="debian81 debian71 debian92" ;;
-    debian-9.*)
+    debian-9*)
       distros="debian92 debian81 debian71" ;;
     debian-*)
       distros="debian92 debian81 debian71" ;;
     
-    ubuntu-12.*)
+    ubuntu-12*)
       distros="ubuntu1204 ubuntu1404" ;;
-    ubuntu-14.*)
+    ubuntu-14*)
       distros="ubuntu1404 ubuntu1204 ubuntu1604" ;;
-    ubuntu-16.*)
+    ubuntu-16*)
       distros="ubuntu1604 ubuntu1404 ubuntu1204" ;;
-    ubuntu-18.*)
+    ubuntu-18*)
       distros="ubuntu1604 ubuntu1404 ubuntu1204" ;;
     ubuntu-*)
       distros="ubuntu1604 ubuntu1404 ubuntu1204" ;;
