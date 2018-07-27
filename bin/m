@@ -324,49 +324,55 @@ install_bin() {
       distro_version=
     fi
   fi
-  if test -z "$distro_version" && test -f /etc/debian_version; then
-    # Debian without lsb_release installed, or Debian testing or sid.
-    # (We don't handle sid.)
-    # This will also catch ubuntus that don't have lsb_release installed,
-    # which is not good
-    distro_version=`cat /etc/debian_version`
-    case "$distro_version" in
-      etch*)
-        distro_version=4 ;;
-      lenny*)
-        distro_version=5 ;;
-      squeeze*)
-        distro_version=6 ;;
-      wheezy*)
-        distro_version=7 ;;
-      jessie*)
-        distro_version=8 ;;
-      stretch*)
-        distro_version=9 ;;
-      buster*)
-        distro_version=10 ;;
-      bullseye*)
-        distro_version=11 ;;
-      bookworm*)
-        distro_version=12 ;;
-    esac
-    distro_id=debian
-  elif test -f /etc/os-release; then
-    # Suse, opensuse, amazon linux, centos (but not redhat)
-    distro_id=`(. /etc/os-release && echo $ID) | tr '[:upper:]' '[:lower:]'`
-    distro_version=`(. /etc/os-release && echo $VERSION_ID)`
+  if test -z "$distro_version"; then
+    if test -f /etc/lsb-release; then
+      # In the case where the distro provides an /etc/lsb-release file, but the lsb_release(1) util isn't installed.
+      distro_id=`sed -ne 's/^DISTRIB_ID=//p' /etc/os-release | sed -e 's/^["'"'"']//' -e 's/["'"'"']$//' -e 's/\\\(.\)/\1/g'`
+      distro_version=`sed -ne 's/^DISTRIB_RELEASE=//p' /etc/os-release | sed -e 's/^["'"'"']//' -e 's/["'"'"']$//' -e 's/\\\(.\)/\1/g'`
+    elif test -f /etc/debian_version; then
+      # Debian without lsb_release installed, or Debian testing or sid.
+      # (We don't handle sid.)
+      # This will also catch ubuntus that don't have lsb_release installed,
+      # which is not good
+      distro_version=`cat /etc/debian_version`
+      case "$distro_version" in
+        etch|etch/*)
+          distro_version=4 ;;
+        lenny|lenny/*)
+          distro_version=5 ;;
+        squeeze|squeeze/*)
+          distro_version=6 ;;
+        wheezy|wheezy/*)
+          distro_version=7 ;;
+        jessie|jessie/*)
+          distro_version=8 ;;
+        stretch|stretch/*)
+          distro_version=9 ;;
+        buster|buster/*)
+          distro_version=10 ;;
+        bullseye|bullseye/*)
+          distro_version=11 ;;
+        bookworm|bookworm/*)
+          distro_version=12 ;;
+      esac
+      distro_id=debian
+    elif test -f /etc/os-release; then
+      # Suse, opensuse, amazon linux, centos (but not redhat)
+      distro_id=`sed -ne 's/^ID=//p' /etc/os-release | sed -e 's/^["'"'"']//' -e 's/["'"'"']$//' -e 's/\\\(.\)/\1/g'`
+      distro_version=`sed -ne 's/^VERSION_ID=//p' /etc/os-release | sed -e 's/^["'"'"']//' -e 's/["'"'"']$//' -e 's/\\\(.\)/\1/g'`
+    fi
   fi
   
   distro_id=`echo "$distro_id" | tr '[:upper:]' '[:lower:]'`
   distro_version=`echo "$distro_version" | tr '[:upper:]' '[:lower:]'`
-  if test "$distro_id" = sles || test "$distro_id" = opensuse; then
-    distro_id=suse
-  fi
-  if test "$distro_id" = centos || test "$distro_id" = redhatenterpriseserver; then
-    distro_id=rhel
-  fi
+  case "$distro_id" in
+    sles) distro_id="suse" ;;
+    opensuse) distro_id="suse" ;;
+    centos) distro_id="rhel" ;;
+    redhatenterpriseserver) distro_id="rhel" ;;
+  esac
   
-  local distro=$distro_id-$distro_version
+  local distro="$distro_id-$distro_version"
   
   # Different versions of MongoDB have builds for different distributions.
   # As m allows installing old MongoDB versions, we can look for
@@ -396,9 +402,9 @@ install_bin() {
     ubuntu-16*)
       distros="ubuntu1604 ubuntu1404 ubuntu1204" ;;
     ubuntu-18*)
-      distros="ubuntu1604 ubuntu1404 ubuntu1204" ;;
+      distros="ubuntu1804 ubuntu1604 ubuntu1404 ubuntu1204" ;;
     ubuntu-*)
-      distros="ubuntu1604 ubuntu1404 ubuntu1204" ;;
+      distros="ubuntu1804 ubuntu1604 ubuntu1404 ubuntu1204" ;;
     
     suse-10*)
       distros="suse10" ;;
@@ -411,7 +417,7 @@ install_bin() {
     
     amzn-*)
       if test "$community" = 1; then
-        distros=amazon
+        distros="amazon"
       else
         distros="amzn64"
       fi
