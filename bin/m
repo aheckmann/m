@@ -195,6 +195,10 @@ display_versions() {
 #
 
 install_mongo() {
+  if [ "$1" -eq "--legacy" ]; then
+    _legacy_only=y
+    shift
+  fi
   local version=$1; shift
   local config=$@
   check_current_version
@@ -435,6 +439,10 @@ install_bin() {
     *)
       distros="" ;;
   esac
+
+  if [ "$_legacy_only" = y ]; then
+    distros=""
+  fi
 
   # determine the download url
   if [[ "$community" == 1 ]]; then
