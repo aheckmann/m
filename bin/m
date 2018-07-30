@@ -377,6 +377,12 @@ install_bin() {
   esac
   
   local distro="$distro_id-$distro_version"
+
+  if test "$community" = 1; then
+    amazon1="amazon"
+  else
+    amazon1="amzn64"
+  fi
   
   # Different versions of MongoDB have builds for different distributions.
   # As m allows installing old MongoDB versions, we can look for
@@ -389,52 +395,51 @@ install_bin() {
   # reasonably well.
   case "$distro" in
     debian-6*)
-      distros="debian71 debian81" ;;
+      distros="" ;;
     debian-7*)
-      distros="debian71 debian81" ;;
+      distros="debian71" ;;
     debian-8*)
-      distros="debian81 debian71 debian92" ;;
+      distros="debian81 debian71" ;;
     debian-9*)
       distros="debian92 debian81 debian71" ;;
     debian-*)
       distros="debian92 debian81 debian71" ;;
     
     ubuntu-12*)
-      distros="ubuntu1204 ubuntu1404" ;;
+      distros="ubuntu1204 debian71" ;;
     ubuntu-14*)
-      distros="ubuntu1404 ubuntu1204 ubuntu1604" ;;
+      distros="ubuntu1404 ubuntu1204 debian71" ;;
     ubuntu-16*)
-      distros="ubuntu1604 ubuntu1404 ubuntu1204" ;;
+      distros="ubuntu1604 ubuntu1404 ubuntu1204 debian71" ;;
     ubuntu-18*)
-      distros="ubuntu1804 ubuntu1604 ubuntu1404 ubuntu1204" ;;
+      distros="ubuntu1804 ubuntu1604 ubuntu1404 ubuntu1204 debian71" ;;
     ubuntu-*)
       distros="ubuntu1804 ubuntu1604 ubuntu1404 ubuntu1204" ;;
     
     suse-10*)
-      distros="suse10" ;;
+      distros="" ;;
     suse-11*)
-      distros="suse11 suse10" ;;
+      distros="suse11" ;;
     suse-12*)
-      distros="suse12 suse11 suse10" ;;
+      distros="suse12 suse11" ;;
     suse-*)
-      distros="suse12 suse11 suse10" ;;
+      distros="suse12 suse11" ;;
     
+    amzn-1)
+      distros="$amazon1 rhel70 rhel62" ;;
+    amzn-2)
+      distros="amazon2 $amazon1 rhel70 rhel62" ;;
     amzn-*)
-      if test "$community" = 1; then
-        distros="amazon"
-      else
-        distros="amzn64"
-      fi
-      ;;
+      distros="amazon2 $amazon1" ;;
     
     rhel-5*)
-      distros="rhel57" ;;
+      distros="rhel55 rhel57" ;;
     rhel-6*)
-      distros="rhel62 rhel57" ;;
+      distros="rhel62 rhel55 rhel57 $amazon1" ;;
     rhel-7*)
-      distros="rhel72 rhel71 rhel70 rhel62 rhel57" ;;
+      distros="rhel70 rhel62 rhel55 rhel57 $amazon1" ;;
     rhel-*)
-      distros="rhel72 rhel71 rhel70 rhel62 rhel57" ;;
+      distros="rhel70 rhel62 rhel55 rhel57" ;;
     
     *)
       distros="" ;;
