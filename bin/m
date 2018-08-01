@@ -321,7 +321,7 @@ install_bin() {
 
   local distro_id= distro_version=
   if lsb_release >/dev/null 2>&1; then
-    # Debian/Ubuntu, also RHEL proper but not centos
+    # If the lsb_release(1) tool is installed, use it.
     distro_id=`lsb_release -si`
     distro_version=`lsb_release -sr`
     if test "$distro_version" = testing; then
@@ -334,10 +334,7 @@ install_bin() {
       distro_id=`sed -ne 's/^DISTRIB_ID=//p' /etc/os-release | sed -e 's/^["'"'"']//' -e 's/["'"'"']$//' -e 's/\\\(.\)/\1/g'`
       distro_version=`sed -ne 's/^DISTRIB_RELEASE=//p' /etc/os-release | sed -e 's/^["'"'"']//' -e 's/["'"'"']$//' -e 's/\\\(.\)/\1/g'`
     elif test -f /etc/debian_version; then
-      # Debian without lsb_release installed, or Debian testing or sid.
-      # (We don't handle sid.)
-      # This will also catch ubuntus that don't have lsb_release installed,
-      # which is not good
+      # Debian generally doesn't install lsb_release(1) or a /etc/lsb-release file, so we figure it out manually.
       distro_version=`cat /etc/debian_version`
       case "$distro_version" in
         etch|etch/*)
