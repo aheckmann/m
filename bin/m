@@ -52,10 +52,10 @@ fi
 GET=
 
 # wget support (Added --no-check-certificate for Github downloads)
-which wget > /dev/null && GET="wget -q -O-"
+which wget 2>&1 > /dev/null && GET="wget -q -O-"
 
 # curl support
-which curl > /dev/null && GET="curl -# -L"
+which curl 2>&1 > /dev/null && GET="curl -# -L"
 
 # Ensure we have curl or wget
 
@@ -78,6 +78,7 @@ display_help() {
     m X.Y                        Install or activate the latest patch release for MongoDB X.Y (eg. 3.6)
     m <version> [config ...]     Install and/or use MongoDB <version>
     m custom <version> <tarball> [config ...]  Install custom MongoDB <tarball> with [args ...]
+    m --legacy <version>         Install generic Linux version
     m use <version> [args ...]   Execute mongod <version> with [args ...]
     m shard <version> [args ...] Execute mongos <version> with [args ...]
     m shell <version> [args ...] Open a mongo shell <version> with [args ...]
@@ -190,15 +191,12 @@ display_versions() {
   fi
 }
 
+
 #
 # Install MongoDB <version> [config ...]
 #
 
 install_mongo() {
-  if [ "$1" -eq "--legacy" ]; then
-    _legacy_only=y
-    shift
-  fi
   local version=$1; shift
   local config=$@
   check_current_version
@@ -238,6 +236,17 @@ install_mongo() {
     prompt_install "MongoDB version $version is not installed."
     install_bin $version $config
   fi
+}
+
+#
+# Install legacy version (Linux generic version)
+#
+
+install_legacy() {
+  echo "LEGACY"
+  _legacy_only=y
+  shift
+  install_mongo $@
 }
 
 #
@@ -331,8 +340,8 @@ install_bin() {
   if test -z "$distro_version"; then
     if test -f /etc/lsb-release; then
       # In the case where the distro provides an /etc/lsb-release file, but the lsb_release(1) util isn't installed.
-      distro_id=`sed -ne 's/^DISTRIB_ID=//p' /etc/os-release | sed -e 's/^["'"'"']//' -e 's/["'"'"']$//' -e 's/\\\(.\)/\1/g'`
-      distro_version=`sed -ne 's/^DISTRIB_RELEASE=//p' /etc/os-release | sed -e 's/^["'"'"']//' -e 's/["'"'"']$//' -e 's/\\\(.\)/\1/g'`
+      distro_id=$(sed -ne 's/^DISTRIB_ID=//p' /etc/lsb-release | sed -e 's/^["'"'"']//' -e 's/["'"'"']$//' -e 's/\\\(.\)/\1/g')
+      distro_version=$(sed -ne 's/^DISTRIB_RELEASE=//p' /etc/lsb-release | sed -e 's/^["'"'"']//' -e 's/["'"'"']$//' -e 's/\\\(.\)/\1/g')
     elif test -f /etc/debian_version; then
       # Debian generally doesn't install lsb_release(1) or a /etc/lsb-release file, so we figure it out manually.
       distro_version=`cat /etc/debian_version`
@@ -359,11 +368,11 @@ install_bin() {
       distro_id=debian
     elif test -f /etc/os-release; then
       # Suse, opensuse, amazon linux, centos (but not redhat)
-      distro_id=`sed -ne 's/^ID=//p' /etc/os-release | sed -e 's/^["'"'"']//' -e 's/["'"'"']$//' -e 's/\\\(.\)/\1/g'`
-      distro_version=`sed -ne 's/^VERSION_ID=//p' /etc/os-release | sed -e 's/^["'"'"']//' -e 's/["'"'"']$//' -e 's/\\\(.\)/\1/g'`
+      distro_id=$(sed -ne 's/^ID=//p' /etc/os-release | sed -e 's/^["'"'"']//' -e 's/["'"'"']$//' -e 's/\\\(.\)/\1/g')
+      distro_version=$(sed -ne 's/^VERSION_ID=//p' /etc/os-release | sed -e 's/^["'"'"']//' -e 's/["'"'"']$//' -e 's/\\\(.\)/\1/g')
     fi
   fi
-  
+
   distro_id=`echo "$distro_id" | tr '[:upper:]' '[:lower:]'`
   distro_version=`echo "$distro_version" | tr '[:upper:]' '[:lower:]'`
   case "$distro_id" in
@@ -372,7 +381,7 @@ install_bin() {
     centos) distro_id="rhel" ;;
     redhatenterpriseserver) distro_id="rhel" ;;
   esac
-  
+
   local distro="$distro_id-$distro_version"
 
   if test "$community" = 1; then
@@ -380,7 +389,7 @@ install_bin() {
   else
     amazon1="amzn64"
   fi
-  
+
   # Different versions of MongoDB have builds for different distributions.
   # As m allows installing old MongoDB versions, we can look for
   # binaries for distributions that the latest MongoDB release is not
@@ -396,27 +405,27 @@ install_bin() {
     debian-8*) distros="debian81 debian71" ;;
     debian-9*) distros="debian92 debian81 debian71" ;;
     debian-*)  distros="debian92 debian81 debian71" ;;
-    
+
     ubuntu-12*) distros="ubuntu1204 debian71" ;;
     ubuntu-14*) distros="ubuntu1404 ubuntu1204 debian71" ;;
     ubuntu-16*) distros="ubuntu1604 ubuntu1404 ubuntu1204 debian71" ;;
     ubuntu-18*) distros="ubuntu1804 ubuntu1604 ubuntu1404 ubuntu1204 debian71" ;;
     ubuntu-*)   distros="ubuntu1804 ubuntu1604 ubuntu1404 ubuntu1204" ;;
-    
+
     suse-10*) distros="" ;;
     suse-11*) distros="suse11" ;;
     suse-12*) distros="suse12 suse11" ;;
     suse-*)   distros="suse12 suse11" ;;
-    
+
     amzn-1) distros="$amazon1 rhel70 rhel62" ;;
     amzn-2) distros="amazon2 $amazon1 rhel70 rhel62" ;;
     amzn-*) distros="amazon2 $amazon1" ;;
-    
+
     rhel-5*) distros="rhel55 rhel57" ;;
     rhel-6*) distros="rhel62 rhel55 rhel57 $amazon1" ;;
     rhel-7*) distros="rhel70 rhel62 rhel55 rhel57 $amazon1" ;;
     rhel-*)  distros="rhel70 rhel62 rhel55 rhel57" ;;
-    
+
     *) distros="" ;;
   esac
 
@@ -945,6 +954,7 @@ list_posts() {
   fi
 }
 
+
 # Handle arguments
 
 if test $# -eq 0; then
@@ -957,6 +967,7 @@ else
       lls|installed) display_versions $2; exit ;;
       --latest) display_latest_version $2; exit ;;
       --stable) display_latest_stable_version $2; exit ;;
+      --legacy) install_legacy $@; exit ;;
       bin|which) display_bin_path_for_version $2; exit ;;
       as|use|mongod) shift; execute_with_version $@; exit ;;
       sd|shard|mongos) shift; execute_shard_with_version $@; exit ;;
