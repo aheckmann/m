@@ -52,10 +52,10 @@ fi
 GET=
 
 # wget support (Added --no-check-certificate for Github downloads)
-which wget 2>&1 > /dev/null && GET="wget -q -O-"
+which wget >/dev/null 2>&1 && GET="wget -q -O-"
 
 # curl support
-which curl 2>&1 > /dev/null && GET="curl -# -L"
+which curl >/dev/null 2>&1 && GET="curl -# -L"
 
 # Ensure we have curl or wget
 
@@ -197,6 +197,10 @@ display_versions() {
 #
 
 install_mongo() {
+  if [ "$1" = "--legacy" ]; then
+    _legacy_only=y
+    shift
+  fi
   local version=$1; shift
   local config=$@
   check_current_version
@@ -236,17 +240,6 @@ install_mongo() {
     prompt_install "MongoDB version $version is not installed."
     install_bin $version $config
   fi
-}
-
-#
-# Install legacy version (Linux generic version)
-#
-
-install_legacy() {
-  echo "LEGACY"
-  _legacy_only=y
-  shift
-  install_mongo $@
 }
 
 #
@@ -954,7 +947,6 @@ list_posts() {
   fi
 }
 
-
 # Handle arguments
 
 if test $# -eq 0; then
@@ -967,7 +959,6 @@ else
       lls|installed) display_versions $2; exit ;;
       --latest) display_latest_version $2; exit ;;
       --stable) display_latest_stable_version $2; exit ;;
-      --legacy) install_legacy $@; exit ;;
       bin|which) display_bin_path_for_version $2; exit ;;
       as|use|mongod) shift; execute_with_version $@; exit ;;
       sd|shard|mongos) shift; execute_shard_with_version $@; exit ;;
