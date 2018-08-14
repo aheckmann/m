@@ -67,6 +67,7 @@ test -z "$GET" && abort "curl or wget required"
 
 display_help() {
   cat <<-help
+  m v$VERSION (MongoDB Version Management)
 
   Usage: m [options] [COMMAND] [config]
 
