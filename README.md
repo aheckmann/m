@@ -186,13 +186,14 @@ Output from `m --help`:
     -h, --help      Display help information
 
   Aliases:
-    which      bin
-    use        as, mongod
-    shard      sd, mongos
-    list       ls
-    installed  lls
+
     custom     c
+    installed  lls
+    shard      sd, mongos
     shell      s, sh, mongo
+    list       ls, available, avail
+    use        as, mongod
+    which      bin
 ```
 
 ## Details

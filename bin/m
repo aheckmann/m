@@ -111,13 +111,13 @@ display_help() {
 
   Aliases:
 
-    which      bin
-    use        as, mongod
-    shard      sd, mongos
-    list       ls
-    installed  lls
     custom     c
+    installed  lls
+    shard      sd, mongos
     shell      s, sh, mongo
+    list       ls, available, avail
+    use        as, mongod
+    which      bin
 
 help
   exit 0
@@ -782,14 +782,37 @@ display_latest_stable_version() {
 #
 
 list_versions() {
+  local version=$1
+  local stable=$2
+
   check_current_version
   local versions=""
+
+  local series="[0-9]+\.[0-9]+"
+  local rc=""
+
+  # match by release series (eg: "3.6")
+  if [[ $version =~ ^([0-9]\.[0-9]+) ]]; then
+    series="${BASH_REMATCH[1]}"
+  fi
+
+  # Default to stable releases, with option to include RCs
+  case $stable in
+    latest|--latest|rc|--rc)
+      rc="([-_\.]rc[0-9]+)?"
+      ;;
+  esac
+
   versions=`$GET 2> /dev/null http://dl.mongodb.org/dl/src/ \
-    | egrep -o '[0-9]+\.[0-9]+\.[0-9]+([-_\.]rc[0-9]+)?' \
+    | egrep -o "$series\.[0-9]+$rc" \
     | sort -u \
     | sort -s -k 2.3n -t - \
     | sort -s -k 1,1n -k 2,2n -k 3,3n -t . \
     | awk '{ print "  " $1 }'`
+
+  if [[ -z "$versions" ]]; then
+      abort "Could not find any releases for the requested version\n"
+  fi
 
   for v in $versions; do
     if test "$active" = "$v"; then
@@ -966,7 +989,7 @@ else
       rm) shift; remove_versions $@; exit ;;
       latest) install_mongo `$0 --latest`; exit ;;
       stable) install_mongo `$0 --stable`; exit ;;
-      ls|list) list_versions $2; exit ;;
+      ls|list|available|avail) shift; list_versions $@; exit ;;
       c|custom) shift; install_tarball $@; exit ;;
       pre) shift; install_hook pre $@; exit ;;
       post) shift; install_hook post $@; exit ;;
