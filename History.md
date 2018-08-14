@@ -1,3 +1,10 @@
+1.5.0 / 2018-08-14
+==================
+ * Add Linux distribution-specific versions #40 (thanks [Oleg Pudeyev](https://github.com/p), [Kev Pulo](https://github.com/devkev), and [Kevin Adistambha](https://github.com/kevinadi)!). Where possible `m` will try to download Linux distro-specific tarballs which include extras like SSL support. Use `m --legacy <version>` to install the generic Linux version.
+ * Support filtering available versions with `m ls <release series>` (eg: `m ls 3.6`)
+ * Add `available` as an alias for `ls` (for consistency with mongodb-version-manager)
+ * Include `m` version number in usage info
+
 1.4.1 / 2018-07-11
 ==================
  * Add aliases aligned with standard binary names: `m mongo|mongod|mongos <version>`
