@@ -153,6 +153,7 @@ Output from `m --help`:
     m latest [config ...]        Install or activate the latest MongoDB release (including dev & RCs)
     m X.Y                        Install or activate the latest patch release for MongoDB X.Y (eg. 3.6)
     m <version> [config ...]     Install and/or use MongoDB <version>
+    m --legacy <version>         Install generic Linux version (does not include SSL)
     m custom <version> <tarball> [config ...]  Install custom MongoDB <tarball> with [args ...]
     m use <version> [args ...]   Execute mongod <version> with [args ...]
     m shard <version> [args ...] Execute mongos <version> with [args ...]
