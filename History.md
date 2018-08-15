@@ -1,3 +1,7 @@
+1.5.1 / 2018-08-16
+==================
+ * Add targeted version checks for macOS naming conventions with support for MongoDB 4.1.x
+
 1.5.0 / 2018-08-14
 ==================
  * Add Linux distribution-specific versions #40 (thanks [Oleg Pudeyev](https://github.com/p), [Kev Pulo](https://github.com/devkev), and [Kevin Adistambha](https://github.com/kevinadi)!). Where possible `m` will try to download Linux distro-specific tarballs which include extras like SSL support. Use `m --legacy <version>` to install the generic Linux version.
