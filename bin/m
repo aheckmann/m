@@ -135,6 +135,7 @@ display_m_version() {
 #
 # Check for installed version, and populate $active
 #
+
 check_current_version() {
   which mongo &> /dev/null
   if test $? -eq 0; then
@@ -261,6 +262,14 @@ prompt_install() {
 }
 
 #
+# Convert version string to numeric for comparison
+#
+
+numeric_version () {
+  echo "$1" | awk -F. '{ printf("%d%02d%02d\n", $1,$2,$3); }';
+}
+
+#
 # Install MongoDB <version> binary
 #
 #   template    http://fastdl.mongodb.org/$OS/mongodb-$OS-$ARCH-$VERSION.tgz
@@ -307,9 +316,13 @@ install_bin() {
       os=linux ;;
     darwin* )
       os=osx
-      # SSL is included in MongoDB 3.0.4+ builds, but with different download path
-      if [[ "$version" =~ ^[34].* ]]; then
-        sslbuild="osx-ssl"
+
+      if [ $(numeric_version $version) -ge $(numeric_version "4.1.1") ]; then
+          # https://jira.mongodb.org/browse/SERVER-35211
+          sslbuild="macos"
+      elif [ $(numeric_version $version) -ge $(numeric_version "3.0.4'") ]; then
+          # https://jira.mongodb.org/browse/SERVER-18421
+          sslbuild="osx-ssl"
       fi
       ;;
     sunos* )
@@ -638,6 +651,8 @@ display_bin_path_for_version() {
 
 #
 # Get the latest installed version in a MongoDB release series (eg: "3.6", "3.6-ent")
+#
+
 get_latest_installed_version() {
   local version=$1
 
@@ -708,7 +723,6 @@ execute_shard_with_version() {
     abort_not_installed $version
   fi
 }
-
 
 #
 # Execute a script with the given shell of
