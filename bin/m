@@ -576,6 +576,10 @@ download() {
   # create build directory
   mkdir -p $builddir
 
+  if ! test -d $builddir; then
+    abort "Failed to create directory ($builddir), do you have permissions to do this?"
+  fi
+
   # fetch and unpack
   cd $builddir \
     && $GET $url | tar xz --strip-components=1 > $logpath 2>&1
