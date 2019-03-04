@@ -481,8 +481,8 @@ install_bin() {
         exit 0;
       fi
     else
-       bin_not_supported $OS $version $config
-       exit 0;
+      bin_not_supported $OS $version $config
+      exit 0;
     fi
   fi
 
@@ -512,7 +512,7 @@ install_bin() {
 #
 
 install_tarball() {
-  log "installing from source"
+  log "installing from source tarball"
 
   pre install
 
