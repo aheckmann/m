@@ -1,3 +1,9 @@
+1.5.2 / 2019-03-04
+==================
+ * Fix macOS Enterprise downloads for 4.1.1+
+ * Support `m install <version>`
+ * Add missing test for successful $builddir creation
+
 1.5.1 / 2018-08-16
 ==================
  * Add targeted version checks for macOS naming conventions with support for MongoDB 4.1.x
