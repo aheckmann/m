@@ -452,22 +452,26 @@ install_bin() {
     done
     local url="http://fastdl.mongodb.org/$os/$tarball"
   else # enterprise version
-    if [[ "$os" == linux ]]; then
-      # for linux fetch the rhel7 tarball by default
-      local dist=rhel70
-      # shadowing earlier $distro
-      for distro in $distros; do
-        if good "http://downloads.10gen.com/$os/mongodb-$os-$arch-enterprise-$distro-$version.tgz"; then
-          dist=$distro
-          break
-        fi
-      done
-      local tarball="mongodb-$os-$arch-enterprise-$dist-$version.tgz"
-    else
-      local tarball="mongodb-$os-$arch-enterprise-$version.tgz"
-    fi
-    local url="http://downloads.10gen.com/$os/$tarball"
+    case $os in
+      linux* )
+        # for linux fetch the rhel7 tarball by default
+        local dist=rhel70
+        # shadowing earlier $distro
+        for distro in $distros; do
+          if good "http://downloads.10gen.com/$os/mongodb-$os-$arch-enterprise-$distro-$version.tgz"; then
+            dist=$distro
+            break
+          fi
+        done
+        ;;
+      osx* )
+        local tarball="mongodb-$sslbuild-$arch-enterprise-$version.tgz"
+        ;;
+      * )
+        local tarball="mongodb-$os-$arch-enterprise-$version.tgz" ;;
+    esac
     version="$version-ent"
+    local url="http://downloads.10gen.com/$os/$tarball"
   fi
 
   if ! good $url; then
