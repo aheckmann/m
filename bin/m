@@ -1013,6 +1013,7 @@ else
       pre) shift; install_hook pre $@; exit ;;
       post) shift; install_hook post $@; exit ;;
       src) shift; list_src_url $@; exit;;
+      install) shift; install_mongo $@; exit ;;
       *) install_mongo $@; exit ;;
     esac
     shift
