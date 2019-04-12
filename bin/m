@@ -284,13 +284,13 @@ install_mongo() {
   if [[ ! -z "$config" ]]; then
     case "$config" in
       latest|--latest|rc|--rc)
-        debug "Using --latest config"
+        debug "Using --latest config (includes dev & RCs)"
         rc="([-_\.]rc[0-9]+)?"
         flavour="latest"
         config=""
         ;;
       legacy|--legacy)
-        debug "Using --legacy config"
+        debug "Using generic Linux legacy config (does not include SSL)"
         _legacy_only=y
         config=""
         shift
