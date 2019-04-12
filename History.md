@@ -1,3 +1,11 @@
+1.5.3 / 2019-04-12
+ * Fix #51: m incorrectly installs RCs for `m 4.0`
+ * Improve package name check for macOS Enterprise downloads
+ * Add message if version to remove was not actually installed
+ * Add caching option via M_CACHE environment variable
+ * Enable debug output via M_DEBUG environment variable
+ * Add `m reinstall <version>`
+
 1.5.2 / 2019-03-04
 ==================
  * Fix macOS Enterprise downloads for 4.1.1+
