@@ -1,9 +1,32 @@
 #!/usr/bin/env bash
 
+### Configuration
+
+# Parent directory
 M_PREFIX=${M_PREFIX-/usr/local}
+
+# Top level directory for files managed by `m`
+#   For single user machine, could `sudo chown -R $USER /usr/local/m/` to
+#   avoid sudo
 M_DIR=$M_PREFIX/m
+
+# Directory for MongoDB version binaries
 VERSIONS_DIR=$M_DIR/versions
+
+# Working directory for unpacking MongoDB tarballs
 BUILD_DIR_BASE=$M_DIR/mongo-
+
+### Dev/test/experimental settings
+DEBUG=${M_DEBUG:-0}
+
+# Use cache?
+CACHE=${M_CACHE:-0}
+
+# Location of cached source file
+CACHE_SRC=${M_CACHE_SRC:-$M_DIR/cache-src.txt}
+
+# Cache source expiry (seconds)
+CACHE_EXPIRY=${M_CACHE_EXPIRY:-3600}
 
 # m version
 VERSION="1.5.2"
@@ -14,6 +37,16 @@ VERSION="1.5.2"
 
 log() {
   printf "\033[90m...\033[0m $@\n"
+}
+
+#
+# Log the given <msg ...> if in debug mode
+#
+
+debug() {
+  if [[ "$DEBUG" == 1 ]]; then
+    printf "\033[90m$@\033[0m \n" 1>&2
+  fi
 }
 
 #
@@ -38,8 +71,17 @@ abort_not_installed() {
   exit 1
 }
 
+#
+# Check file age (in seconds)
+#
 
-# setup
+file_age_in_seconds() {
+  local FILE_TIME=`date -r "$1" +%s`;
+  local TIME_NOW=`date +%s`;
+  echo "$[ ${TIME_NOW} - ${FILE_TIME} ]";
+}
+
+### Setup
 
 test -d $VERSIONS_DIR || mkdir -p $VERSIONS_DIR
 
@@ -129,7 +171,34 @@ help
 #
 
 display_m_version() {
+  debug "$0"
   echo $VERSION && exit 0
+}
+
+#
+# Internal helper to get all versions
+#
+
+get_all_versions() {
+    local src_url="http://dl.mongodb.org/dl/src/"
+
+    if [ $CACHE == 1 ]; then
+        # Use the cached versions if valid
+        debug "$CACHE_SRC is $(file_age_in_seconds $CACHE_SRC) seconds old (expiry: $CACHE_EXPIRY)"
+        if [ -e $CACHE_SRC ] && [ $(file_age_in_seconds $CACHE_SRC) -lt $CACHE_EXPIRY ]; then
+          debug "Using cache: $CACHE_SRC"
+          all_versions=`cat $CACHE_SRC`
+        fi
+    fi
+
+    if [ -z "$all_versions" ]; then
+      debug "get_all_versions(): $GET $src_url"
+      all_versions=`$GET 2> /dev/null $src_url`
+      if [ $CACHE ]; then
+        debug "Creating cache: $CACHE_SRC"
+        echo "$all_versions" > $CACHE_SRC
+      fi
+    fi
 }
 
 #
@@ -177,7 +246,7 @@ display_versions() {
     if $json; then
       printf "\n  {\n    \"name\" : \"$version\",\n    \"path\" : \"$dir/bin/\" \n  }"
       if [ "$version" != "$last" ]; then
-         printf ","
+        printf ","
       fi
     else
       if [ "$version" = "$active" ]; then
@@ -199,34 +268,72 @@ display_versions() {
 #
 
 install_mongo() {
-  if [ "$1" = "--legacy" ]; then
-    _legacy_only=y
-    shift
-  fi
+
   local version=$1; shift
   local config=$@
+  local rc=""
+  local flavour="stable"
+
   check_current_version
+
+  # Default to stable releases, with option to include RCs
+  if [[ ! -z "$config" ]]; then
+    case "$config" in
+      latest|--latest|rc|--rc)
+        debug "Using --latest config"
+        rc="([-_\.]rc[0-9]+)?"
+        flavour="latest"
+        config=""
+        ;;
+      legacy|--legacy)
+        debug "Using --legacy config"
+        _legacy_only=y
+        config=""
+        shift
+        ;;
+    esac
+  fi
 
   if test "$version" = "$active"; then
     echo "$version already active"
     exit 0;
   fi
 
+  debug "CURRENT: $version"
+
   # shorthand for finding latest in a release series (eg: "3.6", "3.6-ent")
   if [[ $version =~ ^([0-9]\.[0-9]+)(-ent)?$ ]]; then
     local series="${BASH_REMATCH[1]}"
     local ent="${BASH_REMATCH[2]}"
+    local all_versions=""
 
-    printf "Checking for latest release of MongoDB $version\n"
-    version=`$GET 2> /dev/null http://dl.mongodb.org/dl/src/ \
-      | egrep -o "$series\.[0-9]+([-_\.]rc[0-9]+)?" \
-      | sort -u -k 1,1n -k 2,2n -k 3,3n -t . \
-      | tail -n1`
-    if [[ -z "$version" ]]; then
-       abort "Could not find any releases for the requested version\n"
+    get_all_versions
+
+    printf ">> Checking for $flavour release of MongoDB $version\n"
+
+    if test "$flavour" = "latest"; then
+      debug "egrep -o \"$series\.[0-9]+$rc\""
+      version=`echo $all_versions \
+        | egrep -o "$series\.[0-9]+$rc" \
+        | sort -u -k 1,1n -k 2,2n -k 3,3n -t . \
+        | tail -n1`
+    else
+      debug "egrep -v \"[-]rc\" | egrep -o \"$series\.[0-9]+\" "
+
+      version=`echo $all_versions \
+        | egrep -o "$series\.[0-9]+\.zip" \
+        | sed s/.zip$// \
+        | sort -u -k 1,1n -k 2,2n -k 3,3n -t . \
+        | tail -n1`
     fi
-    # append the enterprise label if included in the original version
     version="$version$ent"
+  fi
+
+  debug "TARGET: $version"
+  debug "FLAVOUR: $flavour"
+
+  if [[ -z "$version" ]]; then
+    abort "Could not find any releases for the requested version\n"
   fi
 
   # activate
@@ -299,6 +406,7 @@ install_bin() {
 
   if ! test -z $config; then
     # config was passed, must build from source
+    debug "install_bin(): building from source because of $config"
     local tarball="mongodb-src-r$version.tar.gz"
     local url="http://downloads.mongodb.org/src/$tarball"
     install_tarball $version $url $config
@@ -306,7 +414,6 @@ install_bin() {
   fi
 
   # determine url based on os and arch
-
   local arch=`uname -m`
   local OS=`uname`
   local os=`echo $OS | tr '[:upper:]' '[:lower:]'`
@@ -316,13 +423,16 @@ install_bin() {
       os=linux ;;
     darwin* )
       os=osx
-
       if [ $(numeric_version $version) -ge $(numeric_version "4.1.1") ]; then
           # https://jira.mongodb.org/browse/SERVER-35211
           sslbuild="macos"
       elif [ $(numeric_version $version) -ge $(numeric_version "3.0.4'") ]; then
           # https://jira.mongodb.org/browse/SERVER-18421
-          sslbuild="osx-ssl"
+          if test "$community" = 1; then
+            sslbuild="osx-ssl"
+          else
+            sslbuild="osx"
+          fi
       fi
       ;;
     sunos* )
@@ -474,11 +584,13 @@ install_bin() {
     local url="http://downloads.10gen.com/$os/$tarball"
   fi
 
+  debug "Default: $url"
   if ! good $url; then
     # Fallback to generic build if not already using this
     if [ "$sslbuild" != "$os" ]; then
       tarball="mongodb-$os-$arch-$version.tgz"
       url="http://fastdl.mongodb.org/$os/$tarball"
+      debug "Fallback: $url"
       echo "Binary not available with SSL support. Checking url for generic (non-SSL) binaries."
       if ! good $url; then
         bin_not_supported $OS $version $config
@@ -584,6 +696,8 @@ download() {
     abort "Failed to create directory ($builddir), do you have permissions to do this?"
   fi
 
+  debug "download(): $GET $url"
+
   # fetch and unpack
   cd $builddir \
     && $GET $url | tar xz --strip-components=1 > $logpath 2>&1
@@ -614,6 +728,7 @@ cleanup() {
 
   if test -d $dir; then
     log "removing source"
+    debug "$dir"
     rm -rf $dir
   fi
 }
@@ -625,6 +740,11 @@ cleanup() {
 remove_versions() {
   test -z $1 && abort "version(s) required"
   check_current_version
+
+  local version=${1#v}
+  local rmpath="$VERSIONS_DIR/$version"
+  debug "Path: $rmpath"
+
   while test $# -ne 0; do
     local version=${1#v}
     if test "$version" = "$active"; then
@@ -635,8 +755,13 @@ remove_versions() {
         * )  printf "\033[33mSKIPPING\033[0m $version "; break;;
       esac
     fi
-    rm -rf $VERSIONS_DIR/$version
-    echo "Removed $version"
+
+    if [ -d $rmpath ]; then
+      rm -rf $rmpath
+      echo "Removed MongoDB $version"
+    else
+      echo "MongoDB $version is not installed"
+    fi
 
     shift
   done
@@ -669,7 +794,7 @@ get_latest_installed_version() {
       version=`$0 --latest`
       ;;
     stable)
-     version=`$0 --stable`
+      version=`$0 --stable`
       ;;
   esac
 
@@ -682,11 +807,11 @@ get_latest_installed_version() {
       | sort -u -k 1,1n -k 2,2n -k 3,3n -t . \
       | tail -n1`
     if [[ -z "$version" ]]; then
-       echo ""
+      echo ""
     else
-       # append the enterprise label if included in the original version
-       version="$version$ent"
-       echo "$version"
+      # append the enterprise label if included in the original version
+      version="$version$ent"
+      echo "$version"
     fi
   else
     echo "$version"
@@ -757,17 +882,20 @@ execute_shell_with_version() {
 
 display_latest_version() {
   local version=$1
+  local all_versions=""
+
+  get_all_versions
 
   if [[ $version =~ ^[0-9]\.[0-9]+$ ]]; then
-    $GET 2> /dev/null http://dl.mongodb.org/dl/src/ \
+    echo $all_versions \
       | egrep -o "$version\.[0-9]+([-_\.]rc[0-9]+)?" \
       | sort -u -k 1,1n -k 2,2n -k 3,3n -t . \
       | tail -n1
   else
     if [[ ! -z "$version" ]]; then
-       abort "Version [$version] does not match the MongoDB release series format (X.Y)"
+      abort "Version [$version] does not match the MongoDB release series format (X.Y)"
     else
-      $GET 2> /dev/null http://dl.mongodb.org/dl/src/ \
+      echo $all_versions \
         | egrep -o '[0-9]+\.[0-9]+\.[0-9]+([-_\.]rc[0-9]+)?' \
         | sort -u -k 1,1n -k 2,2n -k 3,3n -t . \
         | tail -n1
@@ -781,17 +909,20 @@ display_latest_version() {
 
 display_latest_stable_version() {
   local version=$1
+  local all_versions=""
+
+  get_all_versions
 
   if [[ $version =~ ^[0-9]\.[02468]+$ ]]; then
-    $GET 2> /dev/null http://dl.mongodb.org/dl/src/ \
+    echo $all_versions \
       | egrep -o "$version\.[0-9]+" \
       | sort -u -k 1,1n -k 2,2n -k 3,3n -t . \
       | tail -n1
   else
     if [[ ! -z "$version" ]]; then
-       abort "Version [$version] does not match a stable MongoDB release series (X.Y)"
+      abort "Version [$version] does not match a stable MongoDB release series (X.Y)"
     else
-      $GET 2> /dev/null http://dl.mongodb.org/dl/src/ \
+      echo $all_versions \
         | egrep -o '[0-9]+\.[02468]+\.[0-9]+\.zip' \
         | sed s/.zip$// \
         | sort -u -k 1,1n -k 2,2n -k 3,3n -t . \
