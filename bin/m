@@ -22,6 +22,9 @@ DEBUG=${M_DEBUG:-0}
 # Use cache?
 CACHE=${M_CACHE:-0}
 
+# Confirm before downloading?
+CONFIRM=${M_CONFIRM:-1}
+
 # Location of cached source file
 CACHE_SRC=${M_CACHE_SRC:-$M_DIR/cache-src.txt}
 
@@ -120,6 +123,7 @@ display_help() {
     m latest [config ...]        Install or activate the latest MongoDB release (including dev & RCs)
     m X.Y                        Install or activate the latest patch release for MongoDB X.Y (eg. 3.6)
     m <version> [config ...]     Install and/or use MongoDB <version>
+    m reinstall <version>        Remove and reinstall MongoDB <version>
     m --legacy <version>         Install generic Linux version (does not include SSL)
     m custom <version> <tarball> [config ...]  Install custom MongoDB <tarball> with [args ...]
     m use <version> [args ...]   Execute mongod <version> with [args ...]
@@ -358,14 +362,16 @@ install_mongo() {
 #
 
 prompt_install() {
-  echo $1
-  while true; do
-    read -p "Installation may take a while. Would you like to proceed? [Y/n] " yn
-    case $yn in
-      [Nn]* ) echo "Aborted."; exit ;;
-      * ) break;;
-    esac
-  done
+  if [[ "$CONFIRM" == 1 ]]; then
+    echo $1
+    while true; do
+      read -p "Installation may take a while. Would you like to proceed? [Y/n] " yn
+      case $yn in
+        [Nn]* ) echo "Aborted."; exit ;;
+        * ) break;;
+      esac
+    done
+  fi
 }
 
 #
@@ -752,15 +758,16 @@ remove_versions() {
       read -p "Are you sure you want to remove this? [y/N] " yn
       case $yn in
         [Yy]* ) ;;
-        * )  printf "\033[33mSKIPPING\033[0m $version "; break;;
+        * )  printf "\033[33mSKIPPING\033[0m $version "; exit;;
       esac
     fi
 
     if [ -d $rmpath ]; then
       rm -rf $rmpath
-      echo "Removed MongoDB $version"
+      echo "Removed MongoDB version $version"
+      active=""
     else
-      echo "MongoDB $version is not installed"
+      echo "MongoDB version $version is not installed"
     fi
 
     shift
@@ -1149,6 +1156,7 @@ else
       post) shift; install_hook post $@; exit ;;
       src) shift; list_src_url $@; exit;;
       install) shift; install_mongo $@; exit ;;
+      reinstall) shift; CONFIRM=0; remove_versions $@; install_mongo $@; exit;;
       *) install_mongo $@; exit ;;
     esac
     shift
