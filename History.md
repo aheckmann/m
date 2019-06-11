@@ -1,4 +1,9 @@
+1.5.4 / 2019-06-11
+==================
+ * Fix #52: Problem setting up on Amazon Linux 1
+
 1.5.3 / 2019-04-12
+==================
  * Fix #51: m incorrectly installs RCs for `m 4.0`
  * Improve package name check for macOS Enterprise downloads
  * Add message if version to remove was not actually installed
