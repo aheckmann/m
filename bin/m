@@ -513,6 +513,8 @@ install_bin() {
     amazon1="amzn64"
   fi
 
+  debug "Detecting distro for $distro"
+
   # Different versions of MongoDB have builds for different distributions.
   # As m allows installing old MongoDB versions, we can look for
   # binaries for distributions that the latest MongoDB release is not
@@ -541,6 +543,7 @@ install_bin() {
     suse-*)   distros="suse12 suse11" ;;
 
     amzn-1) distros="$amazon1 rhel70 rhel62" ;;
+    amzn-2018.03) distros="$amazon1 rhel70 rhel62" ;;
     amzn-2) distros="amazon2 $amazon1 rhel70 rhel62" ;;
     amzn-*) distros="amazon2 $amazon1" ;;
 
