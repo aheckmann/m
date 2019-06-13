@@ -1,10 +1,35 @@
-# m
+# m - MongoDB Version Manager
 
- MongoDB version manager
+`m` helps you download, use, and manage multiple versions of the MongoDB server
+and command-line tools.
+
+This can be useful for development & testing environments. For example, testing
+release upgrades/downgrades or potential behavior differences between versions.
+
+Where possible `m` will try to download the distro-specific binaries for your
+O/S and version. If a binary appears to be unavailable, `m` will ask if you want
+to try building from source.
+
+NOTE: [Building MongoDB from source](https://github.com/mongodb/mongo/wiki/Build-Mongodb-From-Source)
+requires you to preinstall all of the relevant dependencies & toolchain to build
+the desired version of MongoDB. Installing those is outside the scope of what
+`m` does.
+
+## Prerequisites
+
+To install binary packages `m` requires a 64-bit O/S which:
+ - is a [Supported Platform for the version of MongoDB you are trying to install](https://docs.mongodb.com/manual/administration/production-notes/#supported-platforms)
+ - includes the `bash` shell
+
+Environments that should work include:
+ - Linux (RHEL/CentOS, Debian/Ubuntu, Amazon Linux)
+ - macOS 10.11 (El Capitan) and later
+ - Windows 10 with [Ubuntu on Windows](https://www.microsoft.com/en-us/p/ubuntu/9nblggh4msv6?activetab=pivot%3Aoverviewtab)
+ - Docker using a supported Linux distro
 
 ## Installation
 
-`m` is a bash script which can be installed & updated via `npm` for convenience:
+`m` is a `bash` script which can be installed & updated via `npm` for convenience:
 
     $ npm install -g m
 
