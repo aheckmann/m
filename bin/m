@@ -537,6 +537,10 @@ install_bin() {
     ubuntu-18*) distros="ubuntu1804 ubuntu1604 ubuntu1404 ubuntu1204 debian71" ;;
     ubuntu-*)   distros="ubuntu1804 ubuntu1604 ubuntu1404 ubuntu1204" ;;
 
+    linuxmint-17*) distros="ubuntu1404" ;;
+    linuxmint-18*) distros="ubuntu1604" ;;
+    linuxmint-19*) distros="ubuntu1804" ;;
+
     suse-10*) distros="" ;;
     suse-11*) distros="suse11" ;;
     suse-12*) distros="suse12 suse11" ;;
