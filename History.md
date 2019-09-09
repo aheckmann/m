@@ -1,3 +1,7 @@
+1.5.5 / 2019-09-09
+==================
+ * Add distro detection for Linux Mint (@alexbevi)
+
 1.5.4 / 2019-06-11
 ==================
  * Fix #52: Problem setting up on Amazon Linux 1
