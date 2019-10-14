@@ -501,6 +501,7 @@ install_bin() {
   case "$distro_id" in
     sles) distro_id="suse" ;;
     opensuse) distro_id="suse" ;;
+    fedora) distro_id="rhel" ;;
     centos) distro_id="rhel" ;;
     redhatenterpriseserver) distro_id="rhel" ;;
   esac
