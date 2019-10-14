@@ -1,3 +1,7 @@
+1.5.6 / 2019-10-14
+==================
+ * Add distro detection for Fedora
+
 1.5.5 / 2019-09-09
 ==================
  * Add distro detection for Linux Mint (@alexbevi)
