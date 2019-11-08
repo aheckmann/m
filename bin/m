@@ -124,7 +124,7 @@ display_help() {
     m X.Y                        Install or activate the latest patch release for MongoDB X.Y (eg. 3.6)
     m <version> [config ...]     Install and/or use MongoDB <version>
     m reinstall <version>        Remove and reinstall MongoDB <version>
-    m --legacy <version>         Install generic Linux version (does not include SSL)
+    m <version> --legacy         Install generic Linux version (does not include SSL)
     m custom <version> <tarball> [config ...]  Install custom MongoDB <tarball> with [args ...]
     m use <version> [args ...]   Execute mongod <version> with [args ...]
     m shard <version> [args ...] Execute mongos <version> with [args ...]
