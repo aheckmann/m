@@ -32,7 +32,7 @@ CACHE_SRC=${M_CACHE_SRC:-$M_DIR/cache-src.txt}
 CACHE_EXPIRY=${M_CACHE_EXPIRY:-3600}
 
 # m version
-VERSION="1.5.6"
+VERSION="1.5.7"
 
 #
 # Log the given <msg ...>
@@ -497,7 +497,7 @@ install_bin() {
   fi
 
   distro_id=`echo "$distro_id" | tr '[:upper:]' '[:lower:]'`
-  distro_version=`echo "$distro_version" | tr '[:upper:]' '[:lower:]'`
+  distro_version=`echo "$distro_version" | tr '[:upper:]' '[:lower:]' | sed -e 's/\.//'`
   case "$distro_id" in
     sles) distro_id="suse" ;;
     opensuse) distro_id="suse" ;;
@@ -506,7 +506,7 @@ install_bin() {
     redhatenterpriseserver) distro_id="rhel" ;;
   esac
 
-  local distro="$distro_id-$distro_version"
+  local distro="$distro_id$distro_version"
 
   if test "$community" = 1; then
     amazon1="amazon"
@@ -578,15 +578,7 @@ install_bin() {
   else # enterprise version
     case $os in
       linux* )
-        # for linux fetch the rhel7 tarball by default
-        local dist=rhel70
-        # shadowing earlier $distro
-        for distro in $distros; do
-          if good "http://downloads.10gen.com/$os/mongodb-$os-$arch-enterprise-$distro-$version.tgz"; then
-            dist=$distro
-            break
-          fi
-        done
+	local tarball="mongodb-$os-$arch-enterprise-$distro-$version.tgz"
         ;;
       osx* )
         local tarball="mongodb-$sslbuild-$arch-enterprise-$version.tgz"
