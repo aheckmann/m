@@ -530,7 +530,8 @@ install_bin() {
     debian-7*) distros="debian71" ;;
     debian-8*) distros="debian81 debian71" ;;
     debian-9*) distros="debian92 debian81 debian71" ;;
-    debian-*)  distros="debian92 debian81 debian71" ;;
+    debian-10*) distros="debian10 debian92 debian81 debian71" ;;
+    debian-*)  distros="debian10 debian92 debian81 debian71" ;;
 
     ubuntu-12*) distros="ubuntu1204 debian71" ;;
     ubuntu-14*) distros="ubuntu1404 ubuntu1204 debian71" ;;
