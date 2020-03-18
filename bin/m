@@ -583,7 +583,7 @@ install_bin() {
         local dist=rhel70
         # shadowing earlier $distro
         for distro in $distros; do
-          if good "http://downloads.10gen.com/$os/mongodb-$os-$arch-enterprise-$distro-$version.tgz"; then
+          if good "https://downloads.mongodb.com/$os/mongodb-$os-$arch-enterprise-$distro-$version.tgz"; then
             dist=$distro
             break
           fi
@@ -596,7 +596,7 @@ install_bin() {
         local tarball="mongodb-$os-$arch-enterprise-$version.tgz" ;;
     esac
     version="$version-ent"
-    local url="http://downloads.10gen.com/$os/$tarball"
+    local url="https://downloads.mongodb.com/$os/$tarball"
   fi
 
   debug "Default: $url"
