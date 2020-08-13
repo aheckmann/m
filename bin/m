@@ -2,6 +2,9 @@
 
 ### Configuration
 
+## Enable extended globbing features
+shopt -s extglob
+
 # Parent directory
 M_PREFIX=${M_PREFIX-/usr/local}
 
@@ -12,6 +15,9 @@ M_DIR=$M_PREFIX/m
 
 # Directory for MongoDB version binaries
 VERSIONS_DIR=$M_DIR/versions
+
+# Directory for MongoDB Tools version binaries
+TOOLS_DIR=$M_DIR/tools/versions
 
 # Working directory for unpacking MongoDB tarballs
 BUILD_DIR_BASE=$M_DIR/mongo-
@@ -145,6 +151,10 @@ display_help() {
                                    (scripts must use absolute paths)
     m pre <event> rm [script]    Remove pre <event> script
     m post <event> rm [script]   Remove post <event> script
+    m tools stable               Install or activate the latest stable Database Tools release
+    m tools X.Y.Z                Install or activate the Database Tools X.Y.Z 
+    m tools ls                   Output the versions of the Database Tools available
+    m tools installed [--json]   Output installed versions of the Database Tools available
 
   Events:
 
@@ -266,6 +276,259 @@ display_versions() {
   fi
 }
 
+#
+# Install and activate MongoDB Database Tools. 
+# Will install the full server for version <4.3.2 since the tools 
+# are included with the server for those versions.
+#
+#   install_tools <version>
+#
+
+install_tools() {
+  local version=$1
+
+  check_current_tools_version
+  check_current_version
+
+  if [[ $version == $active_tools ]]; then
+    printf "Already Active: MongoDB Server and Shell $active, MongoDB Database Tools $active_tools\n"
+    exit 0
+  fi
+
+  if [[ $version =~ "rc" ]]; then
+    local rc="--rc"
+  fi
+  get_all_tools_versions $rc
+  
+  if [[ $version == "stable" ]]; then
+    # Set version to the latest available version
+    version=`echo $versions | awk 'NF>1{print $NF}'`
+  fi
+
+  version_test=`echo $version | sed -r 's/-ent$//'`
+  if [[ ! $versions =~ $version_test ]]; then
+    printf "Could not find any releases for the requested version "$version" of Database Tools\n"
+    exit 1;
+  fi
+
+  if verlt $version "99.0.0"; then
+    # Tools are included in the server for $version
+    local dir=$VERSIONS_DIR/$version
+    if test ! -d $dir; then
+      prompt_install "Database Tools version $version is not installed."
+      install_bin $version
+    fi
+    printf "Activating: MongoDB Server and Shell $active, MongoDB Database Tools $version\n"
+    ln -fs $dir/bin/bsondump \
+      $dir/bin/mongodump \
+      $dir/bin/mongorestore \
+      $dir/bin/mongoimport \
+      $dir/bin/mongoexport \
+      $dir/bin/mongofiles \
+      $dir/bin/mongostat \
+      $dir/bin/mongotop \
+      $dir/bin/mongoreplay \
+      $dir/bin/mongooplog \
+      $dir/bin/mongosniff \
+      $dir/bin/mongoperf \
+      $M_PREFIX/bin
+  else
+    # Separately released tools
+    local dir=$TOOLS_DIR/$version
+    if test ! -d $dir; then
+      prompt_install "Database Tools version $version is not installed."
+      install_tools_bin $version
+    fi
+    printf "Activating: MongoDB Server and Shell $active, MongoDB Database Tools $version\n"
+    ln -fs $dir/bin/* $M_PREFIX/bin
+  fi
+}
+
+#
+# Install MongoDB Database Tools binaries for provided version
+#
+#   install_tools_bin <version>
+#
+
+install_tools_bin() {
+  local version=$1
+  community=1
+
+  log "installing binary"
+
+  ext="tgz"
+  get_distro_and_arch
+  if [[ $os = "linux" ]]; then
+    # for linux fetch the rhel7 tarball by default
+    local dist=rhel70
+    # shadowing earlier $distro
+    for distro in $distros; do
+      if good "https://fastdl.mongodb.org/tools/db/mongodb-database-tools-$distro-$arch-$version.tgz"; then
+        dist=$distro
+        break
+      fi
+    done
+  fi
+  if [[ $os = "osx" ]]; then
+    dist="macos"
+    if vergte $version "100.1.0"; then
+      ext="zip"
+    fi
+  fi
+
+  printf "Downloading from https://fastdl.mongodb.org/tools/db/mongodb-database-tools-$dist-$arch-$version.$ext"
+
+  $GET https://fastdl.mongodb.org/tools/db/mongodb-database-tools-$dist-$arch-$version.$ext -o $M_DIR/tools-$version.$ext
+  mkdir -p $TOOLS_DIR/$version
+  if [[ $ext = "zip" ]]; then
+    unzip -q $M_DIR/tools-$version.zip -d $TOOLS_DIR/$version
+  else 
+    tar --warning=no-timestamp -xzf $M_DIR/tools-$version.tgz -C $TOOLS_DIR/$version
+  fi
+  mv $TOOLS_DIR/$version/mongodb-database-tools-$dist-$arch-$version/* $TOOLS_DIR/$version
+  rm -r $TOOLS_DIR/$version/mongodb-database-tools-$dist-$arch-$version
+  log "removing source"
+  rm $M_DIR/tools-$version.$ext
+  log "installation complete"
+}
+
+#
+# Find the current installed version of tools.
+#
+
+check_current_tools_version() {
+  which mongodump &> /dev/null
+  if test $? -eq 0; then
+    active_tools=`mongodump --version | sed -rn "s/mongodump version\: r?(.*)$/\1/p"`
+  fi
+}
+
+#
+# Find all available versions of the database tools.
+# Includes server versions up to 4.3.1.
+#
+
+get_all_tools_versions() {
+  local tools_regex="([0-3]\.[0-9]+\.[0-9]+|4\.[0-2]\.[0-9]+|4\.3\.[01])"
+  local rc_regex=""
+  if [[ $1 == "--rc" ]]; then
+    local rc_regex="(-rc[0-9]+)?"
+  fi
+
+  tools_versions=`curl -s \
+  -H "Accept: application/vnd.github.v3+json" \
+  https://api.github.com/repos/mongodb/mongo-tools/git/refs/tags \
+  | sed -rn "s/^.*\"ref\"\: \"refs\/tags\/r?([[:digit:]]{2,3}\.[[:digit:]]+\.[[:digit:]]+)\",$/\1/p" \
+  | sort -V`
+
+  server_versions=`$GET 2> /dev/null http://dl.mongodb.org/dl/src/ \
+    | egrep -o "$tools_regex$rc_regex" \
+    | sort -u \
+    | sort -s -k 2.3n -t - \
+    | sort -s -k 1,1n -k 2,2n -k 3,3n -t . \
+    | awk '{ if ($1 ) { print "  " $1 } }'`
+
+  versions="$server_versions $tools_versions"
+}
+
+#
+# Output all database tools versions
+#
+
+list_tools_versions() {
+  check_current_tools_version
+
+  if [[ $2 == "--rc" ]]; then
+    local rc="--rc"
+  fi
+
+  get_all_tools_versions $rc
+
+  for v in $versions; do
+    if test "$active_tools" = "$v"; then
+      printf "  \033[32mο\033[0m $v \033[0m\n"
+    else
+      if test -d $VERSIONS_DIR/$v || test -d $TOOLS_DIR/$v; then
+        printf "  * $v \033[0m\n"
+      else
+        printf "    $v\n"
+      fi
+    fi
+  done
+}
+
+#
+# Version less than or equal
+#
+
+verlte() {
+    [  "$1" = "`echo -e "$1\n$2" | sort -V | head -n1`" ]
+}
+
+#
+# Version greater than or equal
+#
+
+vergte() {
+    [  "$1" = "`echo -e "$1\n$2" | sort -rV | head -n1`" ]
+}
+
+#
+# Version less than
+#
+
+verlt() {
+    [ "$1" = "$2" ] && return 1 || verlte $1 $2
+}
+
+#
+# Output all installed tools versions.
+# Pass "--json" to output in JSON format.
+#
+
+display_tools_versions() {
+  local option=$1; shift
+  local json=false
+
+  declare -a versions
+  versions=(`(ls -1 $VERSIONS_DIR; ls -1 $TOOLS_DIR) | sort -t. -k 1,1n -k 2,2n -k 3,3n`)
+  if test -z "$versions"; then
+    echo No installed versions
+    return
+  fi
+  local last=${versions[${#versions[@]}-1]}
+
+  if test "$option" = "--json"; then
+    json=true
+    printf "["
+  fi
+
+  check_current_tools_version
+  for version in ${versions[@]}; do
+    num_version=$(numeric_version $version)
+    if verlt $version "99.0.0" && vergte $version "4.3.2"; then
+      continue
+    fi
+    local dir="$TOOLS_DIR/$version"
+    local config=`test -f "$dir"/.config && cat "$dir"/.config`
+    if $json; then
+      printf "\n  {\n    \"name\" : \"$version\",\n    \"path\" : \"$dir/bin/\" \n  }"
+      if [ "$version" != "$last" ]; then
+        printf ","
+      fi
+    else
+      if [ "$version" = "$active_tools" ]; then
+        printf "  \033[32mο\033[0m $version \033[90m$config\033[0m\n"
+      else
+        printf "    $version \033[90m$config\033[0m\n"
+      fi
+    fi
+  done
+
+  if $json; then
+    printf "\n]\n"
+  fi
+}
 
 #
 # Install MongoDB <version> [config ...]
@@ -279,6 +542,7 @@ install_mongo() {
   local flavour="stable"
 
   check_current_version
+  check_current_tools_version
 
   # Default to stable releases, with option to include RCs
   if [[ ! -z "$config" ]]; then
@@ -299,7 +563,7 @@ install_mongo() {
   fi
 
   if test "$version" = "$active"; then
-    echo "$version already active"
+    echo "Already Active: MongoDB Server and Shell $version, MongoDB Database Tools $active_tools"
     exit 0;
   fi
 
@@ -340,19 +604,23 @@ install_mongo() {
     abort "Could not find any releases for the requested version\n"
   fi
 
-  # activate
+  
   local dir=$VERSIONS_DIR/$version
-  if test -d $dir; then
-    pre change
-    printf "Activating $version\n"
-    cd $dir \
-      && ln -fs $dir/bin/* $M_PREFIX/bin \
-      && post change
-  # install
-  else
+  if ! test -d $dir; then
+    # install
     prompt_install "MongoDB version $version is not installed."
     install_bin $version $config
   fi
+
+  tools_glob="bsondump|mongodump|mongorestore|mongoimport|mongoexport|mongofiles|mongostat|mongotop|mongoreplay|mongooplog|mongosniff|mongoperf"
+
+  # activate
+  pre change
+
+  printf "Activating: MongoDB Server and Shell $version, MongoDB Database Tools $active_tools\n"
+  cd $dir \
+    && ln -fs $dir/bin/!($tools_glob) $M_PREFIX/bin \
+    && post change
 }
 
 #
@@ -402,7 +670,7 @@ numeric_version () {
 install_bin() {
   local version=$1
   local config=$2
-  local community=1
+  community=1
 
   # check if enterprise
   if [[ $version == *-ent ]]; then
@@ -420,9 +688,87 @@ install_bin() {
   fi
 
   # determine url based on os and arch
-  local arch=`uname -m`
+  get_distro_and_arch
+
+  # determine the download url
+  if [[ "$community" == 1 ]]; then
+    local tarball="mongodb-$sslbuild-$arch-$version.tgz"
+    # shadowing earlier $distro
+    for distro in $distros; do
+      if good "http://fastdl.mongodb.org/$os/mongodb-$sslbuild-$arch-$distro-$version.tgz"; then
+        tarball="mongodb-$sslbuild-$arch-$distro-$version.tgz"
+        break
+      fi
+    done
+    local url="http://fastdl.mongodb.org/$os/$tarball"
+  else # enterprise version
+    case $os in
+      linux* )
+        # for linux fetch the rhel7 tarball by default
+        local dist=rhel70
+        # shadowing earlier $distro
+        for distro in $distros; do
+          if good "http://downloads.10gen.com/$os/mongodb-$os-$arch-enterprise-$distro-$version.tgz"; then
+            dist=$distro
+            break
+          fi
+        done
+        ;;
+      osx* )
+        local tarball="mongodb-$sslbuild-$arch-enterprise-$version.tgz"
+        ;;
+      * )
+        local tarball="mongodb-$os-$arch-enterprise-$version.tgz" ;;
+    esac
+    version="$version-ent"
+    local url="http://downloads.10gen.com/$os/$tarball"
+  fi
+
+  debug "Default: $url"
+  if ! good $url; then
+    # Fallback to generic build if not already using this
+    if [ "$sslbuild" != "$os" ]; then
+      tarball="mongodb-$os-$arch-$version.tgz"
+      url="http://fastdl.mongodb.org/$os/$tarball"
+      debug "Fallback: $url"
+      echo "Binary not available with SSL support. Checking url for generic (non-SSL) binaries."
+      if ! good $url; then
+        bin_not_supported $OS $version $config
+        exit 0;
+      fi
+    else
+      bin_not_supported $OS $version $config
+      exit 0;
+    fi
+  fi
+
+  log "installing binary"
+
+  pre install
+
+  # perform the download
+  local builddir="$BUILD_DIR_BASE$version"
+  download $version $url $builddir
+
+  # copy binaries to version directory
+  local dir=$VERSIONS_DIR/$version
+  mkdir -p $dir
+
+  mv "$builddir/bin" $dir \
+    && cleanup "$builddir" \
+    && ln -sf $dir "$M_PREFIX/m/current" \
+    && post install \
+    && log "installation complete"
+}
+
+#
+# Set the os, distro, and arch variables for the current machine.
+#
+
+get_distro_and_arch () {
+  arch=`uname -m`
   local OS=`uname`
-  local os=`echo $OS | tr '[:upper:]' '[:lower:]'`
+  os=`echo $OS | tr '[:upper:]' '[:lower:]'`
 
   case $os in
     linux* )
@@ -506,7 +852,7 @@ install_bin() {
     redhatenterpriseserver) distro_id="rhel" ;;
   esac
 
-  local distro="$distro_id-$distro_version"
+  distro="$distro_id-$distro_version"
 
   if test "$community" = 1; then
     amazon1="amazon"
@@ -563,77 +909,6 @@ install_bin() {
   if [ "$_legacy_only" = y ]; then
     distros=""
   fi
-
-  # determine the download url
-  if [[ "$community" == 1 ]]; then
-    local tarball="mongodb-$sslbuild-$arch-$version.tgz"
-    # shadowing earlier $distro
-    for distro in $distros; do
-      if good "http://fastdl.mongodb.org/$os/mongodb-$sslbuild-$arch-$distro-$version.tgz"; then
-        tarball="mongodb-$sslbuild-$arch-$distro-$version.tgz"
-        break
-      fi
-    done
-    local url="http://fastdl.mongodb.org/$os/$tarball"
-  else # enterprise version
-    case $os in
-      linux* )
-        # for linux fetch the rhel7 tarball by default
-        local dist=rhel70
-        # shadowing earlier $distro
-        for distro in $distros; do
-          if good "http://downloads.10gen.com/$os/mongodb-$os-$arch-enterprise-$distro-$version.tgz"; then
-            dist=$distro
-            break
-          fi
-        done
-        ;;
-      osx* )
-        local tarball="mongodb-$sslbuild-$arch-enterprise-$version.tgz"
-        ;;
-      * )
-        local tarball="mongodb-$os-$arch-enterprise-$version.tgz" ;;
-    esac
-    version="$version-ent"
-    local url="http://downloads.10gen.com/$os/$tarball"
-  fi
-
-  debug "Default: $url"
-  if ! good $url; then
-    # Fallback to generic build if not already using this
-    if [ "$sslbuild" != "$os" ]; then
-      tarball="mongodb-$os-$arch-$version.tgz"
-      url="http://fastdl.mongodb.org/$os/$tarball"
-      debug "Fallback: $url"
-      echo "Binary not available with SSL support. Checking url for generic (non-SSL) binaries."
-      if ! good $url; then
-        bin_not_supported $OS $version $config
-        exit 0;
-      fi
-    else
-      bin_not_supported $OS $version $config
-      exit 0;
-    fi
-  fi
-
-  log "installing binary"
-
-  pre install
-
-  # perform the download
-  local builddir="$BUILD_DIR_BASE$version"
-  download $version $url $builddir
-
-  # copy binaries to version directory
-  local dir=$VERSIONS_DIR/$version
-  mkdir -p $dir
-
-  mv "$builddir/bin" $dir \
-    && cleanup "$builddir" \
-    && install_mongo $version \
-    && ln -sf $dir "$M_PREFIX/m/current" \
-    && post install \
-    && log "installation complete"
 }
 
 # Install MongoDB <version> from source <tarball> [config ...]
@@ -1139,6 +1414,17 @@ list_posts() {
   fi
 }
 
+# Handle tools commands
+
+handle_tools() {
+  case $1 in
+      ls|list|available|avail) list_tools_versions $@; exit;;
+      lls|installed) display_tools_versions $2; exit ;;
+      stable) install_tools $@; exit ;;
+      *) install_tools $@; exit ;;
+    esac
+}
+
 # Handle arguments
 
 if test $# -eq 0; then
@@ -1165,6 +1451,7 @@ else
       src) shift; list_src_url $@; exit;;
       install) shift; install_mongo $@; exit ;;
       reinstall) shift; CONFIRM=0; remove_versions $@; install_mongo $@; exit;;
+      tools) shift; handle_tools $@; exit;;
       *) install_mongo $@; exit ;;
     esac
     shift
