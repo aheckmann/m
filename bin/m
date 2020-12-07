@@ -492,9 +492,12 @@ display_tools_versions() {
   local json=false
 
   declare -a versions
-  versions=(`(ls -1 $VERSIONS_DIR; ls -1 $TOOLS_DIR) | sort -t. -k 1,1n -k 2,2n -k 3,3n`)
+  if [ -e $TOOLS_DIR ]; then
+    versions=(`(ls -1 $VERSIONS_DIR; ls -1 $TOOLS_DIR) | sort -t. -k 1,1n -k 2,2n -k 3,3n`)
+  fi
+
   if test -z "$versions"; then
-    echo No installed versions
+    echo "No installed versions"
     return
   fi
   local last=${versions[${#versions[@]}-1]}
