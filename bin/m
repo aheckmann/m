@@ -710,6 +710,7 @@ install_bin() {
         for distro in $distros; do
           if good "http://downloads.10gen.com/$os/mongodb-$os-$arch-enterprise-$distro-$version.tgz"; then
             dist=$distro
+            tarball="mongodb-$os-$arch-enterprise-$distro-$version.tgz"
             break
           fi
         done
@@ -876,7 +877,8 @@ get_distro_and_arch () {
     debian-7*) distros="debian71" ;;
     debian-8*) distros="debian81 debian71" ;;
     debian-9*) distros="debian92 debian81 debian71" ;;
-    debian-*)  distros="debian92 debian81 debian71" ;;
+    debian-10*) distros="debian10 debian92 debian81 debian71" ;;
+    debian-*)  distros="debian10 debian92 debian81 debian71" ;;
 
     ubuntu-12*) distros="ubuntu1204 debian71" ;;
     ubuntu-14*) distros="ubuntu1404 ubuntu1204 debian71" ;;
