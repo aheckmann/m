@@ -305,7 +305,7 @@ install_tools() {
     version=`echo $versions | awk 'NF>1{print $NF}'`
   fi
 
-  version_test=`echo $version | sed -r 's/-ent$//'`
+  version_test=`echo $version | sed 's/-ent$//'`
   if [[ ! $versions =~ $version_test ]]; then
     printf "Could not find any releases for the requested version "$version" of Database Tools\n"
     exit 1;
@@ -399,7 +399,8 @@ install_tools_bin() {
 check_current_tools_version() {
   which mongodump &> /dev/null
   if test $? -eq 0; then
-    active_tools=`mongodump --version | sed -rn "s/mongodump version\: r?(.*)$/\1/p"`
+    # Note: this regex only works for mongodump 3.0+
+    active_tools=`mongodump --version | sed -n "s/mongodump version: r\(.*\)$/\1/p"`
   fi
 }
 
@@ -418,7 +419,7 @@ get_all_tools_versions() {
   tools_versions=`curl -s \
   -H "Accept: application/vnd.github.v3+json" \
   https://api.github.com/repos/mongodb/mongo-tools/git/refs/tags \
-  | sed -rn "s/^.*\"ref\"\: \"refs\/tags\/r?([[:digit:]]{2,3}\.[[:digit:]]+\.[[:digit:]]+)\",$/\1/p" \
+  | sed -n "s/^.*\"ref\"\: \"refs\/tags\/r?\(\d{2,3}\.\d+\.\d+\)\",$/\1/p" \
   | sort -V`
 
   server_versions=`$GET 2> /dev/null http://dl.mongodb.org/dl/src/ \
