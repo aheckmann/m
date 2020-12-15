@@ -95,6 +95,26 @@ Select a MongoDB version without prompting for confirmation if a download is req
 
     $ yes | m 4.0.0
 
+### Downloading MongoDB Database Tools
+
+The Database Tools (mongodump, mongorestore, etc.) are now released separately from the server. You can use `m` to manage your MongoDB Database Tools version independently of your MongoDB server and shell versions.
+
+List available Database Tools versions:
+
+    $ m tools ls
+
+List installed Database Tools versions:
+
+    $ m tools installed
+
+Use or download the latest stable release of the Database Tools:
+
+    $ m tools stable
+
+Use or download a specific version of the Database Tools:
+
+    $ m tools 100.0.0
+
 ### Removing Binaries
 
 Remove some previously installed versions:
@@ -199,6 +219,10 @@ Output from `m --help`:
                                    (scripts must use absolute paths)
     m pre <event> rm [script]    Remove pre <event> script
     m post <event> rm [script]   Remove post <event> script
+    m tools stable               Install or activate the latest stable Database Tools release
+    m tools X.Y.Z                Install or activate the Database Tools X.Y.Z 
+    m tools ls                   Output the versions of the Database Tools available
+    m tools installed [--json]   Output installed versions of the Database Tools available
 
   Events:
 
@@ -223,7 +247,7 @@ Output from `m --help`:
 
 ## Details
 
- By default `m` downloads MongoDB binaries to _/usr/local/m/versions_ in subdirectories named after the release version (3.2.16, 3.4.9, ...). Activated MongoDB binaries are symlinked into the `bin` directory in _/usr/local_.  To alter where `m` operates, export the __M_PREFIX__ environment variable with your preferred path prefix.
+ By default `m` downloads MongoDB binaries to _/usr/local/m/versions_ in subdirectories named after the release version (3.2.16, 3.4.9, ...). MongoDB Database Tools binaries are downloaded to _/usr/local/m/tools/versions_ in subdirectories named after the release version (100.0.0, 100.0.1, ...). Activated MongoDB binaries are symlinked into the `bin` directory in _/usr/local_.  To alter where `m` operates, export the __M_PREFIX__ environment variable with your preferred path prefix.
 
 Previously downloaded versions of MongoDB can be activated using `m <version>` or
 selected using of the variations in the _Binary Usage_ section above. 
