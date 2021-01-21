@@ -1,3 +1,10 @@
+1.6.0 / 2021-01-21
+==================
+ * Fix detection of 4.4+ Enterprise versions (@alcaeus)
+ * Add support for standalone database tools: `m tools ...` (@tfogo)
+ * Add Debian 10 support (@p)
+ * Correct placement of the `--legacy` parameter in help example (@mbroadst)
+
 1.5.6 / 2019-10-14
 ==================
  * Add distro detection for Fedora
