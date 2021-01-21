@@ -223,7 +223,7 @@ check_current_version() {
   which mongo &> /dev/null
   if test $? -eq 0; then
     active=`mongod --version | grep "version\s*v[0-9]" | egrep -o '[0-9]+\.[0-9]+\.[0-9]+([-_\.][a-zA-Z0-9]+)?' | head -1`
-    ent=`mongod --version | egrep "modules:\s*enterprise" | wc -l`
+    ent=`mongod --version | egrep "(modules:\s*)|\"enterprise\"?" | wc -l`
     if [[ $ent == *1 ]]; then
       active="$active-ent"
     fi
