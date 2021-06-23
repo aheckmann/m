@@ -896,6 +896,7 @@ get_distro_and_arch () {
     linuxmint-17*) distros="ubuntu1404" ;;
     linuxmint-18*) distros="ubuntu1604" ;;
     linuxmint-19*) distros="ubuntu1804" ;;
+    linuxmint-20*) distros="ubuntu2004" ;;
 
     suse-10*) distros="" ;;
     suse-11*) distros="suse11" ;;
