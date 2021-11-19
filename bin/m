@@ -6,12 +6,13 @@
 shopt -s extglob
 
 # Parent directory
-M_PREFIX=${M_PREFIX-/usr/local}
+M_PREFIX=${M_PREFIX-$HOME/.local}
 
 # Top level directory for files managed by `m`
-#   For single user machine, could `sudo chown -R $USER /usr/local/m/` to
-#   avoid sudo
 M_DIR=$M_PREFIX/m
+
+# Directory to symlink binaries into
+M_BIN_DIR=${M_BIN_DIR-$M_PREFIX/bin}
 
 # Directory for MongoDB version binaries
 VERSIONS_DIR=$M_DIR/versions
@@ -318,7 +319,7 @@ install_tools() {
       prompt_install "Database Tools version $version is not installed."
       install_bin $version
     fi
-    printf "Activating: MongoDB Server and Shell $active, MongoDB Database Tools $version\n"
+    printf "\nActivating: MongoDB Server and Shell $active, MongoDB Database Tools $version\n"
     debug "DB Tools path: $dir"
     ln -fs $dir/bin/bsondump \
       $dir/bin/mongodump \
@@ -332,7 +333,7 @@ install_tools() {
       $dir/bin/mongooplog \
       $dir/bin/mongosniff \
       $dir/bin/mongoperf \
-      $M_PREFIX/bin
+      $M_BIN_DIR
   else
     # Separately released tools
     local dir=$TOOLS_DIR/$version
@@ -340,10 +341,9 @@ install_tools() {
       prompt_install "Database Tools version $version is not installed."
       install_tools_bin $version
     fi
-    printf "Activating: MongoDB Server and Shell $active, MongoDB Database Tools $version\n"
-
+    printf "\nActivating: MongoDB Server and Shell $active, MongoDB Database Tools $version\n"
     debug "DB Tools path: $dir"
-    ln -fs $dir/bin/* $M_PREFIX/bin
+    ln -fs $dir/bin/* $M_BIN_DIR
   fi
 }
 
@@ -392,7 +392,7 @@ install_tools_bin() {
   rm -r $TOOLS_DIR/$version/mongodb-database-tools-$dist-$arch-$version
   log "removing source"
   rm $M_DIR/tools-$version.$ext
-  log "installation complete"
+  log "Installation complete"
 }
 
 #
@@ -624,10 +624,19 @@ install_mongo() {
   # activate
   pre change
 
-  printf "Activating: MongoDB Server and Shell $version, MongoDB Database Tools $active_tools\n"
+  printf "\nActivating: MongoDB Server and Shell $version, MongoDB Database Tools $active_tools\n"
+  debug "Symlinking binaries in $dir/bin to $M_BIN_DIR"
+
+  mkdir -p "$M_BIN_DIR"
+
   cd $dir \
-    && ln -fs $dir/bin/!($tools_glob) $M_PREFIX/bin \
+    && ln -fs $dir/bin/!($tools_glob) $M_BIN_DIR \
     && post change
+
+  echo ""
+  echo "Installation to $M_BIN_DIR complete!"
+  echo "==> Make sure your PATH includes $M_BIN_DIR"
+  echo ""
 }
 
 #
@@ -750,8 +759,6 @@ install_bin() {
     fi
   fi
 
-  log "installing binary"
-
   pre install
 
   # perform the download
@@ -762,11 +769,11 @@ install_bin() {
   local dir=$VERSIONS_DIR/$version
   mkdir -p $dir
 
+  log "Moving binaries to $dir/bin"
   mv "$builddir/bin" $dir \
     && cleanup "$builddir" \
     && ln -sf $dir "$M_PREFIX/m/current" \
-    && post install \
-    && log "installation complete"
+    && post install
 }
 
 #
@@ -784,8 +791,11 @@ get_distro_and_arch() {
     darwin* )
       os=osx
       if [ "$arch" = "arm64" ]; then
+          echo ""
           log "NOTE: Apple Silicon is not natively supported for MongoDB server yet"
-          log " ==> Changing arch from arm64 to x86_64"
+          log " ==> Changing detected architecture from arm64 to x86_64 so Rosetta 2 can be used"
+          log "     More info: https://support.apple.com/en-au/HT211861"
+          echo ""
           arch="x86_64"
       fi
       if [ $(numeric_version $version) -ge $(numeric_version "4.1.1") ]; then
@@ -955,7 +965,7 @@ install_tarball() {
     && $0 $version \
     && ln -sf $dir "$M_PREFIX/m/current" \
     && post install \
-    && log "installation complete"
+    && log "Installation complete"
 }
 
 #
@@ -1031,8 +1041,8 @@ cleanup() {
   local dir=$1
 
   if test -d $dir; then
-    log "removing source"
-    debug "$dir"
+    log "Cleaning up temporary files"
+    debug "Removing working directory: $dir"
     rm -rf $dir
   fi
 }
