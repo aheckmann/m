@@ -38,14 +38,14 @@ CACHE_SRC=${M_CACHE_SRC:-$M_DIR/cache-src.txt}
 CACHE_EXPIRY=${M_CACHE_EXPIRY:-3600}
 
 # m version
-VERSION="1.6.0"
+VERSION="1.7.0-dev"
 
 #
 # Log the given <msg ...>
 #
 
 log() {
-  printf "\033[90m...\033[0m $@\n"
+  printf "... $@\n"
 }
 
 #
@@ -54,7 +54,7 @@ log() {
 
 debug() {
   if [[ "$DEBUG" == 1 ]]; then
-    printf "\033[90m$@\033[0m \n" 1>&2
+    printf "$@\n" 1>&2
   fi
 }
 
@@ -63,7 +63,7 @@ debug() {
 #
 
 abort() {
-  printf "\033[31mError: $@\033[0m\n" && exit 1
+  printf "Error: $@\n" && exit 1
 }
 
 #
@@ -73,7 +73,7 @@ abort() {
 abort_not_installed() {
   local version=$1
 
-  printf "\033[31mError: requested MongoDB version is not installed\033[0m\n"
+  printf "Error: requested MongoDB version is not installed\n"
   if [[ ! -z "$version" ]]; then
     printf "Try 'm $version' to download and activate.\n"
   fi
@@ -264,9 +264,9 @@ display_versions() {
       fi
     else
       if [ "$version" = "$active" ]; then
-        printf "  \033[32mο\033[0m $version \033[90m$config\033[0m\n"
+        printf "   $version $config\n"
       else
-        printf "    $version \033[90m$config\033[0m\n"
+        printf "    $version $config\n"
       fi
     fi
   done
@@ -450,10 +450,10 @@ list_tools_versions() {
 
   for v in $versions; do
     if test "$active_tools" = "$v"; then
-      printf "  \033[32mο\033[0m $v \033[0m\n"
+      printf "   $v\n"
     else
       if test -d $VERSIONS_DIR/$v || test -d $TOOLS_DIR/$v; then
-        printf "  * $v \033[0m\n"
+        printf "  * $v\n"
       else
         printf "    $v\n"
       fi
@@ -525,9 +525,9 @@ display_tools_versions() {
       fi
     else
       if [ "$version" = "$active_tools" ]; then
-        printf "  \033[32mο\033[0m $version \033[90m$config\033[0m\n"
+        printf "   $version $config\n"
       else
-        printf "    $version \033[90m$config\033[0m\n"
+        printf "    $version $config\n"
       fi
     fi
   done
@@ -1004,7 +1004,7 @@ download() {
   if test $? -gt 0; then
     cd -
     cleanup "$builddir"
-    printf "\033[31mError: installation failed\033[0m\n"
+    printf "Error: installation failed\n"
     printf "  MongoDB version $version does not exist,\n"
     printf "  m failed to fetch the tarball,\n"
     printf "  or tar failed. Try a different\n"
@@ -1046,11 +1046,11 @@ remove_versions() {
   while test $# -ne 0; do
     local version=${1#v}
     if test "$version" = "$active"; then
-      printf "\033[33mWARNING\033[0m $version is the active version!\n"
+      printf "WARNING: $version is the active version!\n"
       read -p "Are you sure you want to remove this? [y/N] " yn
       case $yn in
         [Yy]* ) ;;
-        * )  printf "\033[33mSKIPPING\033[0m $version "; exit;;
+        * )  printf "SKIPPING $version "; exit;;
       esac
     fi
 
@@ -1269,10 +1269,10 @@ list_versions() {
 
   for v in $versions; do
     if test "$active" = "$v"; then
-      printf "  \033[32mο\033[0m $v \033[0m\n"
+      printf "  ο $v\n"
     else
       if test -d $VERSIONS_DIR/$v; then
-        printf "  * $v \033[0m\n"
+        printf "  * $v\n"
       else
         printf "    $v\n"
       fi
