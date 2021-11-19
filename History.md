@@ -1,3 +1,9 @@
+1.7.0 / 2021-11-19
+==================
+ * Update M_PREFIX behaviour to default to a writeable directory (~/.local)
+ * Add support for installing on Apple Silicon with Rosetta 2
+ * Fix for ANSI colour coding not working with printf in bash 3.2
+
 1.6.0 / 2021-01-21
 ==================
  * Fix detection of 4.4+ Enterprise versions (@alcaeus)
