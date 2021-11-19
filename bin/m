@@ -640,10 +640,10 @@ prompt_install() {
   if [[ "$CONFIRM" == 1 ]]; then
     echo $1
     while true; do
-      read -p "Installation may take a while. Would you like to proceed? [Y/n] " yn
+      read -p "Installation may take a while. Would you like to proceed? [y/N] " yn
       case $yn in
-        [Nn]* ) echo "Aborted."; exit ;;
-        * ) break;;
+        [Yy]* ) break ;;
+        * ) echo "Aborted."; exit ;;
       esac
     done
   fi
@@ -773,7 +773,7 @@ install_bin() {
 # Set the os, distro, and arch variables for the current machine.
 #
 
-get_distro_and_arch () {
+get_distro_and_arch() {
   arch=`uname -m`
   local OS=`uname`
   os=`echo $OS | tr '[:upper:]' '[:lower:]'`
@@ -783,6 +783,11 @@ get_distro_and_arch () {
       os=linux ;;
     darwin* )
       os=osx
+      if [ "$arch" = "arm64" ]; then
+          log "NOTE: Apple Silicon is not natively supported for MongoDB server yet"
+          log " ==> Changing arch from arm64 to x86_64"
+          arch="x86_64"
+      fi
       if [ $(numeric_version $version) -ge $(numeric_version "4.1.1") ]; then
           # https://jira.mongodb.org/browse/SERVER-35211
           sslbuild="macos"
