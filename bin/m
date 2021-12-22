@@ -142,6 +142,7 @@ display_help() {
     m --stable X.Y                .. for release series X.Y (eg. 3.6)
     m --latest                   Output the latest MongoDB version available (including dev & RCs)
     m --latest X.Y                .. for release series X.Y (eg. 3.6)
+    m link                       Create versioned links for all installed binaries (eg. mongod-3.6)
     m ls                         Output the versions of MongoDB available
     m installed [--json]         Output installed versions available (optionally, in JSON format)
     m src <version>              Output the url for source used for the given <version>
@@ -176,6 +177,7 @@ display_help() {
     list       ls, available, avail
     use        as, mongod
     which      bin
+    link       ln
 
 help
   exit 0
@@ -229,6 +231,33 @@ check_current_version() {
       active="$active-ent"
     fi
   fi
+}
+
+#
+# Create versioned links of currently installed
+# MongoDB binaries
+#
+link_versions() {
+  declare -a versions
+  versions=(`ls -1 $VERSIONS_DIR | sort -t. -k 1,1n -k 2,2n -k 3,3n`)
+  if test -z "$versions"; then
+    echo No installed versions
+    return
+  fi
+
+  binaries_glob="mongod|mongo|mongos"
+
+  for version in ${versions[@]}; do
+    local v=`echo $version | cut -f -2 -d .`
+    local dir="$VERSIONS_DIR/$version"
+
+    for binary in $dir/bin/@($binaries_glob); do
+      local link=$M_BIN_DIR/${binary##*/}-${v}
+      [ -f "$link" ] && rm "$link"
+      ln -fs ${binary} ${link}
+    done
+    post change
+  done
 }
 
 #
@@ -1460,6 +1489,7 @@ else
       -V|--version) display_m_version ;;
       -h|--help|help) display_help ;;
       lls|installed) display_versions $2; exit ;;
+      link|ln) link_versions; exit ;;
       --latest) display_latest_version $2; exit ;;
       --stable) display_latest_stable_version $2; exit ;;
       bin|which) display_bin_path_for_version $2; exit ;;
