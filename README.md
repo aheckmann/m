@@ -35,7 +35,7 @@ Environments that should work include:
 
 or installed by cloning the GitHub repo and running `make install`:
 
-    $ git clone git://github.com/aheckmann/m.git && cd m && make install
+    $ git clone git@github.com:aheckmann/m.git && cd m && make install
 
 or fetched via `wget` and copied to a location of your choice:
 

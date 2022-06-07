@@ -4,9 +4,9 @@ M_PREFIX ?= /usr/local
 nothing:
 
 install: bin/m
-		cp $< $(M_PREFIX)/$<
+		sudo cp $< $(M_PREFIX)/$<  # requires sudo now on mac
 
 uninstall:
-		rm -f $(M_PREFIX)/bin/m
+		sudo rm -f $(M_PREFIX)/bin/m  # requires sudo now on mac
 
 .PHONY: install uninstall nothing
