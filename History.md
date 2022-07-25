@@ -1,3 +1,9 @@
+1.8.0 / 2022-07-26
+==================
+ * Use full.json download list instead of legacy /src/ directory
+ * Adjust --stable for 5.0+ versioning scheme
+ * Add version-based support for native arm64 binaries on macOS
+
 1.7.0 / 2021-11-19
 ==================
  * Update M_PREFIX behaviour to default to a writeable directory (~/.local)

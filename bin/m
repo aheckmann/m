@@ -33,13 +33,13 @@ CACHE=${M_CACHE:-0}
 CONFIRM=${M_CONFIRM:-1}
 
 # Location of cached source file
-CACHE_SRC=${M_CACHE_SRC:-$M_DIR/cache-src.txt}
+CACHE_SRC=${M_CACHE_SRC:-$M_DIR/cache-src.json}
 
 # Cache source expiry (seconds)
 CACHE_EXPIRY=${M_CACHE_EXPIRY:-3600}
 
 # m version
-VERSION="1.7.0"
+VERSION="1.8.0-dev"
 
 #
 # Log the given <msg ...>
@@ -195,14 +195,16 @@ display_m_version() {
 #
 
 get_all_versions() {
-    local src_url="http://dl.mongodb.org/dl/src/"
+    local src_url="https://downloads.mongodb.org/full.json"
 
     if [ $CACHE == 1 ]; then
         # Use the cached versions if valid
-        debug "$CACHE_SRC is $(file_age_in_seconds $CACHE_SRC) seconds old (expiry: $CACHE_EXPIRY)"
-        if [ -e $CACHE_SRC ] && [ $(file_age_in_seconds $CACHE_SRC) -lt $CACHE_EXPIRY ]; then
-          debug "Using cache: $CACHE_SRC"
-          all_versions=`cat $CACHE_SRC`
+        if [ -e $CACHE_SRC ]; then
+          debug "$CACHE_SRC is $(file_age_in_seconds $CACHE_SRC) seconds old (expiry: $CACHE_EXPIRY)"
+          if [ $(file_age_in_seconds $CACHE_SRC) -lt $CACHE_EXPIRY ]; then
+            debug "Using cache: $CACHE_SRC"
+            all_versions=`cat $CACHE_SRC`
+          fi
         fi
     fi
 
@@ -589,6 +591,7 @@ install_mongo() {
     if test "$flavour" = "latest"; then
       debug "egrep -o \"$series\.[0-9]+$rc\""
       version=`echo $all_versions \
+        | grep '"version\":' \
         | egrep -o "$series\.[0-9]+$rc" \
         | sort -u -k 1,1n -k 2,2n -k 3,3n -t . \
         | tail -n1`
@@ -596,6 +599,7 @@ install_mongo() {
       debug "egrep -v \"[-]rc\" | egrep -o \"$series\.[0-9]+\" "
 
       version=`echo $all_versions \
+        | grep '"version\":' \
         | egrep -o "$series\.[0-9]+\.zip" \
         | sed s/.zip$// \
         | sort -u -k 1,1n -k 2,2n -k 3,3n -t . \
@@ -724,7 +728,7 @@ install_bin() {
         local dist=rhel70
         # shadowing earlier $distro
         for distro in $distros; do
-          if good "http://downloads.10gen.com/$os/mongodb-$os-$arch-enterprise-$distro-$version.tgz"; then
+          if good "http://downloads.mongodb.com/$os/mongodb-$os-$arch-enterprise-$distro-$version.tgz"; then
             dist=$distro
             tarball="mongodb-$os-$arch-enterprise-$distro-$version.tgz"
             break
@@ -738,7 +742,7 @@ install_bin() {
         local tarball="mongodb-$os-$arch-enterprise-$version.tgz" ;;
     esac
     version="$version-ent"
-    local url="http://downloads.10gen.com/$os/$tarball"
+    local url="http://downloads.mongodb.com/$os/$tarball"
   fi
 
   debug "Default: $url"
@@ -791,23 +795,27 @@ get_distro_and_arch() {
     darwin* )
       os=osx
       if [ "$arch" = "arm64" ]; then
+        if [ $(numeric_version $version) -lt $(numeric_version "6.0.0") ]; then
           echo ""
-          log "NOTE: Apple Silicon is not natively supported for MongoDB server yet"
+          log "NOTE: Apple Silicon is not natively supported for MongoDB server before 6.0"
           log " ==> Changing detected architecture from arm64 to x86_64 so Rosetta 2 can be used"
           log "     More info: https://support.apple.com/en-au/HT211861"
           echo ""
           arch="x86_64"
+        fi
       fi
-      if [ $(numeric_version $version) -ge $(numeric_version "4.1.1") ]; then
+
+      if [ $(numeric_version $version) -lt $(numeric_version "4.1.1") ]; then
           # https://jira.mongodb.org/browse/SERVER-35211
-          sslbuild="macos"
-      elif [ $(numeric_version $version) -ge $(numeric_version "3.0.4'") ]; then
+          sslbuild="osx"
           # https://jira.mongodb.org/browse/SERVER-18421
           if test "$community" = 1; then
             sslbuild="osx-ssl"
           else
             sslbuild="osx"
           fi
+      else
+        sslbuild="macos"
       fi
       ;;
     sunos* )
@@ -1228,9 +1236,18 @@ display_latest_stable_version() {
 
   get_all_versions
 
-  if [[ $version =~ ^[0-9]\.[02468]+$ ]]; then
+  if [[ $version =~ ^[0-4]\.[0246]+$ ]]; then
+    debug "Stable version < 5.0 ($version) is X.Y (Y is even)"
     echo $all_versions \
       | egrep -o "$version\.[0-9]+" \
+      | uniq \
+      | sort -u -k 1,1n -k 2,2n -k 3,3n -t . \
+      | tail -n1
+  elif [[ $version =~ ^[5-9]\.0$ ]]; then
+    debug "Stable version >= 5.0 ($version) is X.0"
+    echo $all_versions \
+      | egrep -o "$version\.[0-9]+" \
+      | uniq \
       | sort -u -k 1,1n -k 2,2n -k 3,3n -t . \
       | tail -n1
   else
@@ -1238,7 +1255,8 @@ display_latest_stable_version() {
       abort "Version [$version] does not match a stable MongoDB release series (X.Y)"
     else
       echo $all_versions \
-        | egrep -o '[0-9]+\.[02468]+\.[0-9]+\.zip' \
+        | egrep -o '[5-9]+\.0+\.[0-9]+\.zip' \
+        | uniq \
         | sed s/.zip$// \
         | sort -u -k 1,1n -k 2,2n -k 3,3n -t . \
         | tail -n1
