@@ -132,7 +132,6 @@ display_help() {
     m <version> [config ...]     Install and/or use MongoDB <version>
     m reinstall <version>        Remove and reinstall MongoDB <version>
     m <version> --legacy         Install generic Linux version (does not include SSL)
-    m custom <version> <tarball> [config ...]  Install custom MongoDB <tarball> with [args ...]
     m use <version> [args ...]   Execute mongod <version> with [args ...]
     m shard <version> [args ...] Execute mongos <version> with [args ...]
     m shell <version> [args ...] Open a mongo shell <version> with [args ...]
@@ -169,7 +168,6 @@ display_help() {
 
   Aliases:
 
-    custom     c
     installed  lls
     shard      sd, mongos
     shell      s, sh, mongo
@@ -700,7 +698,7 @@ install_bin() {
 
   if ! test -z $config; then
     # config was passed, must build from source
-    debug "install_bin(): building from source because of $config"
+    debug "install_bin(): unsupported config ($config) passed"
     local tarball="mongodb-src-r$version.tar.gz"
     local url="http://downloads.mongodb.org/src/$tarball"
     install_tarball $version $url $config
@@ -754,11 +752,11 @@ install_bin() {
       debug "Fallback: $url"
       echo "Binary not available with SSL support. Checking url for generic (non-SSL) binaries."
       if ! good $url; then
-        bin_not_supported $OS $version $config
+        bin_not_supported $os-$arch $version $config
         exit 0;
       fi
     else
-      bin_not_supported $OS $version $config
+      bin_not_supported $os-$arch $version $config
       exit 0;
     fi
   fi
@@ -944,37 +942,6 @@ get_distro_and_arch() {
   fi
 }
 
-# Install MongoDB <version> from source <tarball> [config ...]
-#
-#   m custom 2.3.2 http://downloads.mongodb.org/src/mongodb-src-r2.3.2.tar.gz flags
-#
-
-install_tarball() {
-  log "installing from source tarball"
-
-  pre install
-
-  local version=$1
-  local url=$2; shift 2
-  local config=$@
-
-  local builddir="$BUILD_DIR_BASE$version"
-
-  download $version $url $builddir
-
-  local dir=$VERSIONS_DIR/$version
-
-  cd "$builddir" \
-    && scons all \
-    && scons --prefix $dir $config install \
-    && cd .. \
-    && cleanup "$builddir" \
-    && echo $config > "$dir/.config" \
-    && $0 $version \
-    && ln -sf $dir "$M_PREFIX/m/current" \
-    && post install \
-    && log "Installation complete"
-}
 
 #
 # Determine if $url is good
@@ -992,12 +959,28 @@ good() {
 bin_not_supported() {
   local OS=$1
   local version=$2
+  echo ""
+  echo "----------------------------------------------------------------------------"
+  echo "Prebuilt binaries for $OS $version do not appear to be available."
+  echo ""
+  echo "For supported platforms, please see:"
+  echo "   https://www.mongodb.com/docs/manual/administration/production-notes/"
+  echo ""
+  echo "To build from source, check the relevant build notes in GitHub:"
+  echo "   https://github.com/mongodb/mongo/blob/master/docs/building.md"
+  echo "----------------------------------------------------------------------------"
+  echo ""
+}
+
+#
+# Install from source
+#
+
+install_tarball() {
+  local version=$1
+  local url=$2
   local config=$3
-  local tarball="mongodb-src-r$version.tar.gz"
-  local url="http://downloads.mongodb.org/src/$tarball"
-  prompt_install "Binary for \"$OS $version\" not supported. Attempting to install from source."
-  log "installing from source"
-  install_tarball $version $url $config
+  bin_not_supported "$version"
 }
 
 #
@@ -1488,7 +1471,6 @@ else
       latest) install_mongo `$0 --latest`; exit ;;
       stable) install_mongo `$0 --stable`; exit ;;
       ls|list|available|avail) shift; list_versions $@; exit ;;
-      c|custom) shift; install_tarball $@; exit ;;
       pre) shift; install_hook pre $@; exit ;;
       post) shift; install_hook post $@; exit ;;
       src) shift; list_src_url $@; exit;;

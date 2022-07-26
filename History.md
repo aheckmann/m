@@ -3,6 +3,7 @@
  * Use full.json download list instead of legacy /src/ directory
  * Adjust --stable for 5.0+ versioning scheme
  * Add version-based support for native arm64 binaries on macOS
+ * Replace `m custom` with info on supported platforms and build from source
 
 1.7.0 / 2021-11-19
 ==================
