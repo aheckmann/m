@@ -265,7 +265,7 @@ display_versions() {
       fi
     else
       if [ "$version" = "$active" ]; then
-        printf "   $version $config\n"
+        printf "  * $version $config\n"
       else
         printf "    $version $config\n"
       fi
