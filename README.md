@@ -23,7 +23,7 @@ To install binary packages `m` requires a 64-bit O/S which:
 
 Environments that should work include:
  - Linux (RHEL/CentOS, Debian/Ubuntu, Amazon Linux)
- - macOS 10.11 (El Capitan) and later
+ - macOS 10.14 (Mojave) and later
  - Windows 10 with [Ubuntu on Windows](https://www.microsoft.com/en-us/p/ubuntu/9nblggh4msv6?activetab=pivot%3Aoverviewtab)
  - Docker using a supported Linux distro
 
@@ -43,23 +43,24 @@ or fetched via `wget` and copied to a location of your choice:
 
 ### Downloading MongoDB Binaries
 
-Specify a MongoDB server version to try download a binary package (if available for your current O/S) or switch to a previously downloaded copy. After `m` successfully downloads or switches to a specified version of MongoDB, those binaries will become the default in the install path (typically `/usr/local/bin/`; see _Details_ below for more information).
+Specify a MongoDB server version to try download a binary package (if available for your current O/S) or switch to a previously downloaded copy. After `m` successfully downloads or switches to a specified version of MongoDB, those binaries will become the default in the install path (typically `$HOME/.local/bin/`; see _Details_ below for more information).
 
-    $ m 3.2.16
-    $ m 3.4.9
+    $ m 4.4.15
+    $ m 5.0.9
 
 You can also specify a release series to download the latest available revision:
 
-    $ m 3.6
-    $ m 4.0
+    $ m 4.4
+    $ m 5.0
 
 List installed binaries:
 
     $ m
 
-      3.2.16
-    ο 3.4.9
-      3.6.0-rc1
+      4.2.21
+      4.4.15
+    * 5.0.9
+      6.0.0
 
 Use or download the latest official release:
 
@@ -72,20 +73,20 @@ Use or download the stable official release:
 Check what the latest available release is:
 
     $ m --latest
-    $ m --latest 3.6
+    $ m --latest 6.0
 
 Check what the current stable release is:
 
     $ m --stable
-    $ m --stable 3.6
+    $ m --stable 6.0
 
 Download an Enterprise release:
 
-    $ m 3.4.9-ent
+    $ m 6.0-ent
 
 Select a MongoDB version without prompting for confirmation if a download is required:
 
-    $ yes | m 4.0.0
+    $ yes | m 6.0
 
 ### Downloading MongoDB Database Tools
 
@@ -111,7 +112,7 @@ Use or download a specific version of the Database Tools:
 
 Remove some previously installed versions:
 
-    $  m rm 3.2.16 3.5.13-me
+    $  m rm 4.4.10 4.4.13
 
 ### Binary Usage
 
@@ -119,25 +120,25 @@ Multiple versions of MongoDB can be downloaded and targeted directly.
 
 Ask `m` for the binary path for a specific version that has already been downloaded:
 
-    $ m bin 3.4.9
-    /usr/local/m/versions/3.4.9/bin/
+    $ m bin 4.4.15
+    /Users/bobbytables/.local/m/versions/4.4.15/bin
 
 Ask `m` for the binary path for the latest revision of a release already downloaded:
 
-    $ m bin 3.6
-    /usr/local/m/versions/3.6.5/bin/
+    $ m bin 4.4
+    /Users/bobbytables/.local/m/versions/4.4.15/bin
 
-Start up `mongod` 3.4.9 regardless of the active version:
+Start up `mongod` 5.0 regardless of the active version:
 
-    $ m use 3.4.9 --port 29000 --dbpath /data/3.4.9/
+    $ m use 5.0 --port 29000 --dbpath ./data/
 
-Execute a script with the 3.4.9 `mongo` shell regardless of the active version:
+Execute a script with the 5.0 `mongo` shell regardless of the active version:
 
-    $ m shell 3.4.9 some.js
+    $ m shell 5.0 some.js
 
-Execute a script with a 3.4.9 `mongo` shell and some additional flags:
+Execute a script with a 5.0.9 `mongo` shell and some additional flags:
 
-    $ m shell 3.4.9 --port 29000 --norc
+    $ m shell 5.0.9 --port 29000 --norc
 
 When installing or changing the active version you might want to run custom scripts:
 
