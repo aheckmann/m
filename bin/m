@@ -1049,12 +1049,10 @@ remove_versions() {
   test -z $1 && abort "version(s) required"
   check_current_version
 
-  local version=${1#v}
-  local rmpath="$VERSIONS_DIR/$version"
-  debug "Path: $rmpath"
-
   while test $# -ne 0; do
     local version=${1#v}
+    local rmpath="$VERSIONS_DIR/$version"
+    debug "=> Path: $rmpath"
     if test "$version" = "$active"; then
       printf "WARNING: $version is the active version!\n"
       read -p "Are you sure you want to remove this? [y/N] " yn
