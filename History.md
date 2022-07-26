@@ -5,6 +5,10 @@
  * Add version-based support for native arm64 binaries on macOS
  * Replace `m custom` with info on supported platforms and building from source
  * Warn if $M_PREFIX/bin isn't included in current $PATH
+ * Add missing Active version indicator
+ * Fix bug preventing multiple versions from being removed
+ * Check bin path using `mongod` (`mongo` is no longer included in 6.0 GA)
+ * Fix matching of latest/stable versions
 
 1.7.0 / 2021-11-19
 ==================
