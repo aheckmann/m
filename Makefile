@@ -1,5 +1,5 @@
 
-M_PREFIX ?= /usr/local
+M_PREFIX ?= $(HOME)/.local
 
 nothing:
 
