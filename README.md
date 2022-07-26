@@ -79,14 +79,6 @@ Check what the current stable release is:
     $ m --stable
     $ m --stable 3.6
 
-Download a custom or patched version of MongoDB from a tarball:
-
-    $ m custom 3.5.13-me https://github.com/mongodb/mongo/tarball/r3.5.13
-
-Download and build a version of MongoDB from source (NOTE: assumes [build requirements](https://github.com/mongodb/mongo/wiki/Build-Mongodb-From-Source) are installed):
-
-    $ m 3.6.5 source
-
 Download an Enterprise release:
 
     $ m 3.4.9-ent
@@ -199,7 +191,6 @@ Output from `m --help`:
     m X.Y                        Install or activate the latest patch release for MongoDB X.Y (eg. 3.6)
     m <version> [config ...]     Install and/or use MongoDB <version>
     m <version> --legacy         Install generic Linux version (does not include SSL)
-    m custom <version> <tarball> [config ...]  Install custom MongoDB <tarball> with [args ...]
     m use <version> [args ...]   Execute mongod <version> with [args ...]
     m shard <version> [args ...] Execute mongos <version> with [args ...]
     m shell <version> [args ...] Open a mongo shell <version> with [args ...]
@@ -236,7 +227,6 @@ Output from `m --help`:
 
   Aliases:
 
-    custom     c
     installed  lls
     shard      sd, mongos
     shell      s, sh, mongo
