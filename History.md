@@ -1,3 +1,9 @@
+1.8.1 / 2022-07-29
+==================
+ * Database tools are not available for macOS arm64 yet; install x86_64 instead
+ * Remove messages suggesting Shell is always installed
+ * Add link to mongosh if activating 6.0.0+ server release
+
 1.8.0 / 2022-07-26
 ==================
  * Use full.json download list instead of legacy /src/ directory

@@ -39,7 +39,7 @@ CACHE_SRC=${M_CACHE_SRC:-$M_DIR/cache-src.json}
 CACHE_EXPIRY=${M_CACHE_EXPIRY:-3600}
 
 # m version
-VERSION="1.8.0"
+VERSION="1.8.1"
 
 #
 # Log the given <msg ...>
@@ -292,7 +292,7 @@ install_tools() {
   check_current_version
 
   if [[ $version == $active_tools ]]; then
-    printf "Already Active: MongoDB Server and Shell $active, MongoDB Database Tools $active_tools\n"
+    printf "Already Active: MongoDB Server $active, MongoDB Database Tools $active_tools\n"
     exit 0
   fi
 
@@ -319,7 +319,7 @@ install_tools() {
       prompt_install "Database Tools version $version is not installed."
       install_bin $version
     fi
-    printf "\nActivating: MongoDB Server and Shell $active, MongoDB Database Tools $version\n"
+    printf "\nActivating: MongoDB Server $active, MongoDB Database Tools $version\n"
     debug "DB Tools path: $dir"
     ln -fs $dir/bin/bsondump \
       $dir/bin/mongodump \
@@ -341,7 +341,7 @@ install_tools() {
       prompt_install "Database Tools version $version is not installed."
       install_tools_bin $version
     fi
-    printf "\nActivating: MongoDB Server and Shell $active, MongoDB Database Tools $version\n"
+    printf "\nActivating: MongoDB Server $active, MongoDB Database Tools $version\n"
     debug "DB Tools path: $dir"
     ln -fs $dir/bin/* $M_BIN_DIR
   fi
@@ -376,6 +376,14 @@ install_tools_bin() {
     dist="macos"
     if vergte $version "100.1.0"; then
       ext="zip"
+    fi
+    if [ "$arch" = "arm64" ]; then
+      echo ""
+      echo "NOTE: Apple Silicon is not natively supported for MongoDB Database Tools"
+      echo " ==> Changing detected architecture from arm64 to x86_64 so Rosetta 2 can be used"
+      echo "     More info: https://support.apple.com/en-au/HT211861"
+      echo ""
+      arch="x86_64"
     fi
   fi
 
@@ -570,7 +578,7 @@ install_mongo() {
   fi
 
   if test "$version" = "$active"; then
-    echo "Already Active: MongoDB Server and Shell $version, MongoDB Database Tools $active_tools"
+    echo "Already Active: MongoDB Server $version, MongoDB Database Tools $active_tools"
     exit 0;
   fi
 
@@ -626,7 +634,7 @@ install_mongo() {
   # activate
   pre change
 
-  printf "\nActivating: MongoDB Server and Shell $version, MongoDB Database Tools $active_tools\n"
+  printf "\nActivating: MongoDB Server $version, MongoDB Database Tools $active_tools\n"
   debug "Symlinking binaries in $dir/bin to $M_BIN_DIR"
 
   mkdir -p "$M_BIN_DIR"
@@ -642,6 +650,15 @@ install_mongo() {
     echo "==> WARNING: \$PATH does not include $M_BIN_DIR"
   fi
   echo ""
+  if vergte $version "6.0.0"; then
+    echo ""
+    echo "NOTE: the legacy mongo shell is not included in MongoDB 6.0+ distributions"
+    echo ""
+    echo "Download the new MongoDB Shell (mongosh):"
+    echo "   https://www.mongodb.com/try/download/shell"
+    echo ""
+  fi
+
 }
 
 #
@@ -798,9 +815,9 @@ get_distro_and_arch() {
       if [ "$arch" = "arm64" ]; then
         if [ $(numeric_version $version) -lt $(numeric_version "6.0.0") ]; then
           echo ""
-          log "NOTE: Apple Silicon is not natively supported for MongoDB server before 6.0"
-          log " ==> Changing detected architecture from arm64 to x86_64 so Rosetta 2 can be used"
-          log "     More info: https://support.apple.com/en-au/HT211861"
+          echo "NOTE: Apple Silicon is not natively supported for MongoDB server before 6.0"
+          echo " ==> Changing detected architecture from arm64 to x86_64 so Rosetta 2 can be used"
+          echo "     More info: https://support.apple.com/en-au/HT211861"
           echo ""
           arch="x86_64"
         fi
