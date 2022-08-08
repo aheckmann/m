@@ -390,6 +390,13 @@ install_tools_bin() {
   printf "Downloading from https://fastdl.mongodb.org/tools/db/mongodb-database-tools-$dist-$arch-$version.$ext"
 
   $GET https://fastdl.mongodb.org/tools/db/mongodb-database-tools-$dist-$arch-$version.$ext -o $M_DIR/tools-$version.$ext
+  if test $? -gt 0; then
+    printf "Error: tools installation failed\n"
+    printf "  Tarball fetch for MongoDB tools version $version failed.\n"
+    printf "  Try a different version or view $logpath to view\n"
+    printf "  error details.\n"
+    exit 1
+  fi
   mkdir -p $TOOLS_DIR/$version
   if [[ $ext = "zip" ]]; then
     unzip -q $M_DIR/tools-$version.zip -d $TOOLS_DIR/$version
