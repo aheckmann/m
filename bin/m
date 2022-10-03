@@ -39,7 +39,7 @@ CACHE_SRC=${M_CACHE_SRC:-$M_DIR/cache-src.json}
 CACHE_EXPIRY=${M_CACHE_EXPIRY:-3600}
 
 # m version
-VERSION="1.8.1"
+VERSION="1.8.2"
 
 #
 # Log the given <msg ...>
@@ -430,6 +430,7 @@ check_current_tools_version() {
 get_all_tools_versions() {
   local tools_regex="([0-3]\.[0-9]+\.[0-9]+|4\.[0-2]\.[0-9]+|4\.3\.[01])"
   local rc_regex=""
+  local all_versions=""
   if [[ $1 == "--rc" ]]; then
     local rc_regex="(-rc[0-9]+)?"
   fi
@@ -440,7 +441,9 @@ get_all_tools_versions() {
   | sed -nE "s/^.*\"ref\"\: \"refs\/tags\/r?([[:digit:]]{2,3}\.[[:digit:]]+\.[[:digit:]]+)\",$/\1/p" \
   | sort -V`
 
-  server_versions=`$GET 2> /dev/null http://dl.mongodb.org/dl/src/ \
+  get_all_versions
+
+  server_versions=`echo $all_versions \
     | egrep -o "$tools_regex$rc_regex" \
     | sort -u \
     | sort -s -k 2.3n -t - \
@@ -1229,7 +1232,7 @@ display_latest_version() {
       abort "Version [$version] does not match the MongoDB release series format (X.Y)"
     else
       echo $all_versions \
-        | egrep -o '[0-9]+\.[0-9]+\.[0-9]+([-_\.]rc[0-9]+)?' \
+        | egrep -o '[0-9]\.[0-9]+\.[0-9]+([-_\.]rc[0-9]+)?' \
         | egrep -v "\d-\d" \
         | uniq \
         | sort -u -k 1,1n -k 2,2n -k 3,3n -t . \
@@ -1288,7 +1291,7 @@ list_versions() {
   local stable=$2
 
   check_current_version
-  local versions=""
+  local all_versions=""
 
   local series="[0-9]+\.[0-9]+"
   local rc=""
@@ -1305,7 +1308,9 @@ list_versions() {
       ;;
   esac
 
-  versions=`$GET 2> /dev/null http://dl.mongodb.org/dl/src/ \
+  get_all_versions
+
+  versions=`$all_versions \
     | egrep -o "$series\.[0-9]+$rc" \
     | sort -u \
     | sort -s -k 2.3n -t - \
