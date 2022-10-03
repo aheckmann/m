@@ -1,3 +1,7 @@
+1.8.2 / 2022-10-03
+==================
+ * `m latest` now outputs correct version
+
 1.8.1 / 2022-07-29
 ==================
  * Database tools are not available for macOS arm64 yet; install x86_64 instead
