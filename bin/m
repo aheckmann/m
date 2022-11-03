@@ -39,7 +39,7 @@ CACHE_SRC=${M_CACHE_SRC:-$M_DIR/cache-src.json}
 CACHE_EXPIRY=${M_CACHE_EXPIRY:-3600}
 
 # m version
-VERSION="1.8.2"
+VERSION="1.8.3"
 
 #
 # Log the given <msg ...>
@@ -595,9 +595,9 @@ install_mongo() {
   debug "CURRENT: $version"
 
   # shorthand for finding latest in a release series (eg: "3.6", "3.6-ent")
-  if [[ $version =~ ^([0-9]\.[0-9]+)(-ent)?$ ]]; then
-    local series="${BASH_REMATCH[1]}"
-    local ent="${BASH_REMATCH[2]}"
+  if [[ $version =~ ^([0-9])\.([0-9]+)(-ent)?$ ]]; then
+    local series="${BASH_REMATCH[1]}\.${BASH_REMATCH[2]}"
+    local ent="${BASH_REMATCH[3]}"
     local all_versions=""
 
     get_all_versions
@@ -1133,9 +1133,9 @@ get_latest_installed_version() {
       ;;
   esac
 
-  if [[ $version =~ ^([0-9]\.[0-9]+)(-ent)?$ ]]; then
-    local series="${BASH_REMATCH[1]}"
-    local ent="${BASH_REMATCH[2]}"
+  if [[ $version =~ ^([0-9)]\.([0-9]+)(-ent)?$ ]]; then
+    local series="${BASH_REMATCH[1]}\.${BASH_REMATCH[2]}"
+    local ent="${BASH_REMATCH[3]}"
     version=`find ${VERSIONS_DIR} -mindepth 1 -maxdepth 1 -type d \
       | egrep -o "$series\.[0-9]+([-_\.]rc[0-9]+)?" \
       | sort -u -k 1,1n -k 2,2n -k 3,3n -t . \
@@ -1293,12 +1293,12 @@ list_versions() {
   check_current_version
   local all_versions=""
 
-  local series="[0-9]+\.[0-9]+"
+  local series="[0-9]\.[0-9]+"
   local rc=""
 
   # match by release series (eg: "3.6")
-  if [[ $version =~ ^([0-9]\.[0-9]+) ]]; then
-    series="${BASH_REMATCH[1]}"
+  if [[ $version =~ ^([0-9])\.([0-9]+) ]]; then
+    series="${BASH_REMATCH[1]}\.${BASH_REMATCH[2]}"
   fi
 
   # Default to stable releases, with option to include RCs
@@ -1310,7 +1310,7 @@ list_versions() {
 
   get_all_versions
 
-  versions=`$all_versions \
+  versions=`echo $all_versions \
     | egrep -o "$series\.[0-9]+$rc" \
     | sort -u \
     | sort -s -k 2.3n -t - \

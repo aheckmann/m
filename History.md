@@ -1,3 +1,8 @@
+1.8.3 / 2022-11-03
+==================
+ * Fix `m ls` error
+ * Correct some overly generous release version matches
+
 1.8.2 / 2022-10-03
 ==================
  * `m latest` now outputs correct version
