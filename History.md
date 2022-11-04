@@ -1,3 +1,7 @@
+1.8.4 / 2022-11-04
+==================
+ * Update detection for supported Linux distros as at MongoDB 6.0
+
 1.8.3 / 2022-11-03
 ==================
  * Fix `m ls` error
