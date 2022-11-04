@@ -39,7 +39,7 @@ CACHE_SRC=${M_CACHE_SRC:-$M_DIR/cache-src.json}
 CACHE_EXPIRY=${M_CACHE_EXPIRY:-3600}
 
 # m version
-VERSION="1.8.3"
+VERSION="1.8.4"
 
 #
 # Log the given <msg ...>
@@ -906,9 +906,11 @@ get_distro_and_arch() {
   case "$distro_id" in
     sles) distro_id="suse" ;;
     opensuse) distro_id="suse" ;;
+    almalinux) distro_id="rhel" ;;
     fedora) distro_id="rhel" ;;
     centos) distro_id="rhel" ;;
     redhatenterpriseserver) distro_id="rhel" ;;
+    rocky) distro_id="rhel" ;;
   esac
 
   distro="$distro_id-$distro_version"
@@ -934,15 +936,17 @@ get_distro_and_arch() {
     debian-6*) distros="" ;;
     debian-7*) distros="debian71" ;;
     debian-8*) distros="debian81 debian71" ;;
-    debian-9*) distros="debian92 debian81 debian71" ;;
-    debian-10*) distros="debian10 debian92 debian81 debian71" ;;
-    debian-*)  distros="debian10 debian92 debian81 debian71" ;;
+    debian-9*) distros="debian92 debian81" ;;
+    debian-10*) distros="debian10 debian92" ;;
+    debian-11*) distros="debian11 debian92" ;;
+    debian-*)  distros="debian11 debian10 debian92" ;;
 
     ubuntu-12*) distros="ubuntu1204 debian71" ;;
-    ubuntu-14*) distros="ubuntu1404 ubuntu1204 debian71" ;;
-    ubuntu-16*) distros="ubuntu1604 ubuntu1404 ubuntu1204 debian71" ;;
-    ubuntu-18*) distros="ubuntu1804 ubuntu1604 ubuntu1404 ubuntu1204 debian71" ;;
-    ubuntu-*)   distros="ubuntu1804 ubuntu1604 ubuntu1404 ubuntu1204" ;;
+    ubuntu-14*) distros="ubuntu1404 ubuntu1204" ;;
+    ubuntu-16*) distros="ubuntu1604 ubuntu1404" ;;
+    ubuntu-18*) distros="ubuntu1804 ubuntu1604" ;;
+    ubuntu-20*) distros="ubuntu2004 ubuntu1804" ;;
+    ubuntu-*)   distros="ubuntu2004 ubuntu1604" ;;
 
     linuxmint-17*) distros="ubuntu1404" ;;
     linuxmint-18*) distros="ubuntu1604" ;;
@@ -952,7 +956,8 @@ get_distro_and_arch() {
     suse-10*) distros="" ;;
     suse-11*) distros="suse11" ;;
     suse-12*) distros="suse12 suse11" ;;
-    suse-*)   distros="suse12 suse11" ;;
+    suse-15*) distros="suse15 suse12" ;;
+    suse-*)   distros="suse15 suse12" ;;
 
     amzn-1) distros="$amazon1 rhel70 rhel62" ;;
     amzn-2018.03) distros="$amazon1 rhel70 rhel62" ;;
@@ -961,8 +966,9 @@ get_distro_and_arch() {
 
     rhel-5*) distros="rhel55 rhel57" ;;
     rhel-6*) distros="rhel62 rhel55 rhel57 $amazon1" ;;
-    rhel-7*) distros="rhel70 rhel62 rhel55 rhel57 $amazon1" ;;
-    rhel-*)  distros="rhel70 rhel62 rhel55 rhel57" ;;
+    rhel-7*) distros="rhel70 rhel62 $amazon1" ;;
+    rhel-8*) distros="rhel80 rhel70 $amazon1" ;;
+    rhel-*)  distros="rhel80 rhel70 rhel62" ;;
 
     *) distros="" ;;
   esac
