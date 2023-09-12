@@ -1,3 +1,8 @@
+1.8.5 / 2023-09-13
+==================
+ * Fix error message when using GNU egrep (@charlievieth)
+ * Docs: git:// should be replaced with https:// (@michaelstruening)
+
 1.8.4 / 2022-11-04
 ==================
  * Update detection for supported Linux distros as at MongoDB 6.0
