@@ -39,7 +39,7 @@ CACHE_SRC=${M_CACHE_SRC:-$M_DIR/cache-src.json}
 CACHE_EXPIRY=${M_CACHE_EXPIRY:-3600}
 
 # m version
-VERSION="1.8.5"
+VERSION="1.8.6-dev"
 
 #
 # Log the given <msg ...>
@@ -946,12 +946,14 @@ get_distro_and_arch() {
     ubuntu-16*) distros="ubuntu1604 ubuntu1404" ;;
     ubuntu-18*) distros="ubuntu1804 ubuntu1604" ;;
     ubuntu-20*) distros="ubuntu2004 ubuntu1804" ;;
-    ubuntu-*)   distros="ubuntu2004 ubuntu1604" ;;
+    ubuntu-22*) distros="ubuntu2204 ubuntu2004" ;;
+    ubuntu-*)   distros="ubuntu2204 ubuntu2004" ;;
 
     linuxmint-17*) distros="ubuntu1404" ;;
     linuxmint-18*) distros="ubuntu1604" ;;
     linuxmint-19*) distros="ubuntu1804" ;;
     linuxmint-20*) distros="ubuntu2004" ;;
+    linuxmint-21*) distros="ubuntu2204" ;;
 
     suse-10*) distros="" ;;
     suse-11*) distros="suse11" ;;
@@ -968,7 +970,8 @@ get_distro_and_arch() {
     rhel-6*) distros="rhel62 rhel55 rhel57 $amazon1" ;;
     rhel-7*) distros="rhel70 rhel62 $amazon1" ;;
     rhel-8*) distros="rhel80 rhel70 $amazon1" ;;
-    rhel-*)  distros="rhel80 rhel70 rhel62" ;;
+    rhel-8*) distros="rhel90 rhel80 rhel70" ;;
+    rhel-*)  distros="rhel90 rhel80 rhel70" ;;
 
     *) distros="" ;;
   esac
