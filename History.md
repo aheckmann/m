@@ -1,3 +1,7 @@
+1.8.6 / 2023-09-20
+==================
+ * Update detection for Ubuntu 22 and RHEL9
+
 1.8.5 / 2023-09-13
 ==================
  * Fix error message when using GNU egrep (@charlievieth)
