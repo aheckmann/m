@@ -1,3 +1,7 @@
+1.8.7 / 2023-09-27
+==================
+ * Use "curl -s" (silent) instead of "curl -#" (@mpobrien)
+
 1.8.6 / 2023-09-20
 ==================
  * Update detection for Ubuntu 22 and RHEL9
