@@ -107,7 +107,7 @@ GET=
 which wget >/dev/null 2>&1 && GET="wget -q -O-"
 
 # curl support
-which curl >/dev/null 2>&1 && GET="curl -# -L"
+which curl >/dev/null 2>&1 && GET="curl -s -L"
 
 # Ensure we have curl or wget
 
