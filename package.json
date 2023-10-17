@@ -1,6 +1,6 @@
 {
   "name": "m",
-  "version": "1.8.7",
+  "version": "1.8.8",
   "description": "MongoDB version management",
   "homepage": "https://github.com/aheckmann/m",
   "bugs": "https://github.com/aheckmann/m/issues",

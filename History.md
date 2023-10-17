@@ -1,3 +1,7 @@
+1.8.8 / 2023-10-17
+==================
+ * Add distro detection for KDE Neon (based on Ubuntu LTS)
+
 1.8.7 / 2023-09-27
 ==================
  * Use "curl -s" (silent) instead of "curl -#" (@mpobrien)

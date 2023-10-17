@@ -39,7 +39,7 @@ CACHE_SRC=${M_CACHE_SRC:-$M_DIR/cache-src.json}
 CACHE_EXPIRY=${M_CACHE_EXPIRY:-3600}
 
 # m version
-VERSION="1.8.7"
+VERSION="1.8.8"
 
 #
 # Log the given <msg ...>
@@ -911,6 +911,7 @@ get_distro_and_arch() {
     centos) distro_id="rhel" ;;
     redhatenterpriseserver) distro_id="rhel" ;;
     rocky) distro_id="rhel" ;;
+    neon) distro_id="ubuntu" ;;
   esac
 
   distro="$distro_id-$distro_version"
