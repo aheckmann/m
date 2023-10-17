@@ -31,15 +31,15 @@ Environments that should work include:
 
 `m` is a `bash` script which can be installed & updated via `npm` for convenience:
 
-    $ npm install -g m
+    npm install -g m
 
 or installed by cloning the GitHub repo and running `make install`:
 
-    $ git clone https://github.com/aheckmann/m.git && cd m && make install
+    git clone https://github.com/aheckmann/m.git && cd m && make install
 
 or fetched via `wget` and copied to a location of your choice:
 
-    $ wget https://raw.githubusercontent.com/aheckmann/m/master/bin/m && chmod +x ./m
+    wget https://raw.githubusercontent.com/aheckmann/m/master/bin/m && chmod +x ./m
 
 ### Downloading MongoDB Binaries
 
