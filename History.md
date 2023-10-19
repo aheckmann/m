@@ -1,3 +1,8 @@
+1.8.9 / 2023-10-19
+==================
+ * Remove shell prompt from install examples so it doesn't get copied
+ * Fix #93: Download of MongoDB 4.2 binaries on Ubuntu 22.04
+
 1.8.8 / 2023-10-17
 ==================
  * Add distro detection for KDE Neon (based on Ubuntu LTS)

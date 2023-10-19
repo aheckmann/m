@@ -39,7 +39,7 @@ CACHE_SRC=${M_CACHE_SRC:-$M_DIR/cache-src.json}
 CACHE_EXPIRY=${M_CACHE_EXPIRY:-3600}
 
 # m version
-VERSION="1.8.8"
+VERSION="1.8.9"
 
 #
 # Log the given <msg ...>
@@ -947,7 +947,7 @@ get_distro_and_arch() {
     ubuntu-16*) distros="ubuntu1604 ubuntu1404" ;;
     ubuntu-18*) distros="ubuntu1804 ubuntu1604" ;;
     ubuntu-20*) distros="ubuntu2004 ubuntu1804" ;;
-    ubuntu-22*) distros="ubuntu2204 ubuntu2004" ;;
+    ubuntu-22*) distros="ubuntu2204 ubuntu2004 ubuntu1804" ;;
     ubuntu-*)   distros="ubuntu2204 ubuntu2004" ;;
 
     linuxmint-17*) distros="ubuntu1404" ;;
