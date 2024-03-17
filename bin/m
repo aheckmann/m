@@ -128,7 +128,7 @@ display_help() {
     m                            Output versions installed
     m stable [config ...]        Install or activate the latest stable MongoDB release
     m latest [config ...]        Install or activate the latest MongoDB release (including dev & RCs)
-    m X.Y                        Install or activate the latest patch release for MongoDB X.Y (eg. 3.6)
+    m X.Y                        Install or activate the latest patch release for MongoDB X.Y (eg. 7.0)
     m <version> [config ...]     Install and/or use MongoDB <version>
     m reinstall <version>        Remove and reinstall MongoDB <version>
     m <version> --legacy         Install generic Linux version (does not include SSL)
@@ -138,9 +138,9 @@ display_help() {
     m bin <version>              Output bin path for <version>
     m rm <version ...>           Remove the given version(s)
     m --stable                   Output the latest stable MongoDB version available
-    m --stable X.Y                .. for release series X.Y (eg. 3.6)
+    m --stable X.Y                .. for release series X.Y (eg. 7.0)
     m --latest                   Output the latest MongoDB version available (including dev & RCs)
-    m --latest X.Y                .. for release series X.Y (eg. 3.6)
+    m --latest X.Y                .. for release series X.Y (eg. 7.0)
     m ls                         Output the versions of MongoDB available
     m installed [--json]         Output installed versions available (optionally, in JSON format)
     m src <version>              Output the url for source used for the given <version>

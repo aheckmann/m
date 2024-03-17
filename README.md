@@ -45,22 +45,20 @@ or fetched via `wget` and copied to a location of your choice:
 
 Specify a MongoDB server version to try download a binary package (if available for your current O/S) or switch to a previously downloaded copy. After `m` successfully downloads or switches to a specified version of MongoDB, those binaries will become the default in the install path (typically `$HOME/.local/bin/`; see _Details_ below for more information).
 
-    $ m 4.4.15
-    $ m 5.0.9
+    $ m 6.0.14
+    $ m 7.0.6
 
 You can also specify a release series to download the latest available revision:
 
-    $ m 4.4
-    $ m 5.0
+    $ m 6.0
+    $ m 7.0
 
 List installed binaries:
 
     $ m
 
-      4.2.21
-      4.4.15
-    * 5.0.9
-      6.0.0
+      6.0.14
+    * 7.0.6
 
 Use or download the latest official release:
 
@@ -73,20 +71,20 @@ Use or download the stable official release:
 Check what the latest available release is:
 
     $ m --latest
-    $ m --latest 6.0
+    $ m --latest 7.0
 
 Check what the current stable release is:
 
     $ m --stable
-    $ m --stable 6.0
+    $ m --stable 7.0
 
 Download an Enterprise release:
 
-    $ m 6.0-ent
+    $ m 7.0-ent
 
 Select a MongoDB version without prompting for confirmation if a download is required:
 
-    $ yes | m 6.0
+    $ yes | m 7.0
 
 ### Downloading MongoDB Database Tools
 
@@ -106,13 +104,13 @@ Use or download the latest stable release of the Database Tools:
 
 Use or download a specific version of the Database Tools:
 
-    $ m tools 100.0.0
+    $ m tools 100.9.4
 
 ### Removing Binaries
 
 Remove some previously installed versions:
 
-    $  m rm 4.4.10 4.4.13
+    $  m rm 6.0.13 7.0.5
 
 ### Binary Usage
 
@@ -120,25 +118,12 @@ Multiple versions of MongoDB can be downloaded and targeted directly.
 
 Ask `m` for the binary path for a specific version that has already been downloaded:
 
-    $ m bin 4.4.15
-    /Users/bobbytables/.local/m/versions/4.4.15/bin
+    $ m bin 7.0.6
+    /Users/bobbytables/.local/m/versions/7.0.6/bin
 
-Ask `m` for the binary path for the latest revision of a release already downloaded:
+Start up `mongod` 6.0.13 regardless of the active version:
 
-    $ m bin 4.4
-    /Users/bobbytables/.local/m/versions/4.4.15/bin
-
-Start up `mongod` 5.0 regardless of the active version:
-
-    $ m use 5.0 --port 29000 --dbpath ./data/
-
-Execute a script with the 5.0 `mongo` shell regardless of the active version:
-
-    $ m shell 5.0 some.js
-
-Execute a script with a 5.0.9 `mongo` shell and some additional flags:
-
-    $ m shell 5.0.9 --port 29000 --norc
+    $ m use 6.0.13 --port 29000 --dbpath ./data/
 
 When installing or changing the active version you might want to run custom scripts:
 
@@ -189,7 +174,7 @@ Output from `m --help`:
     m                            Output versions installed
     m stable [config ...]        Install or activate the latest stable MongoDB release
     m latest [config ...]        Install or activate the latest MongoDB release (including dev & RCs)
-    m X.Y                        Install or activate the latest patch release for MongoDB X.Y (eg. 3.6)
+    m X.Y                        Install or activate the latest patch release for MongoDB X.Y (eg. 7.0)
     m <version> [config ...]     Install and/or use MongoDB <version>
     m <version> --legacy         Install generic Linux version (does not include SSL)
     m use <version> [args ...]   Execute mongod <version> with [args ...]
@@ -198,9 +183,9 @@ Output from `m --help`:
     m bin <version>              Output bin path for <version>
     m rm <version ...>           Remove the given version(s)
     m --stable                   Output the latest stable MongoDB version available
-    m --stable X.Y                .. for release series X.Y (eg. 3.6)
+    m --stable X.Y                .. for release series X.Y (eg. 7.0)
     m --latest                   Output the latest MongoDB version available (including dev & RCs)
-    m --latest X.Y                .. for release series X.Y (eg. 3.6)
+    m --latest X.Y                .. for release series X.Y (eg. 7.0)
     m ls                         Output the versions of MongoDB available
     m installed [--json]         Output installed versions available (optionally, in JSON format)
     m src <version>              Output the url for source used for the given <version>
@@ -238,7 +223,7 @@ Output from `m --help`:
 
 ## Details
 
- By default `m` downloads MongoDB binaries to _/usr/local/m/versions_ in subdirectories named after the release version (3.2.16, 3.4.9, ...). MongoDB Database Tools binaries are downloaded to _/usr/local/m/tools/versions_ in subdirectories named after the release version (100.0.0, 100.0.1, ...). Activated MongoDB binaries are symlinked into the `bin` directory in _/usr/local_.  To alter where `m` operates, export the __M_PREFIX__ environment variable with your preferred path prefix.
+ By default `m` downloads MongoDB binaries to _~/.local/m/versions_ in subdirectories named after the release version (6.0.14, 7.0.6, ...). MongoDB Database Tools binaries are downloaded to _~/.local/m/tools/versions_ in subdirectories named after the release version (100.0.0, 100.0.1, ...). Activated MongoDB binaries are symlinked into the `bin` directory in _~/.local/bin_.  To alter where `m` operates, export the __M_PREFIX__ environment variable with your preferred path prefix.
 
 Previously downloaded versions of MongoDB can be activated using `m <version>` or
 selected using of the variations in the _Binary Usage_ section above. 
