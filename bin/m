@@ -39,7 +39,7 @@ CACHE_SRC=${M_CACHE_SRC:-$M_DIR/cache-src.json}
 CACHE_EXPIRY=${M_CACHE_EXPIRY:-3600}
 
 # m version
-VERSION="1.8.9"
+VERSION="1.9.0-dev"
 
 #
 # Log the given <msg ...>
@@ -661,12 +661,27 @@ install_mongo() {
   fi
   echo ""
   if vergte $version "6.0.0"; then
-    echo ""
-    echo "NOTE: the legacy mongo shell is not included in MongoDB 6.0+ distributions"
-    echo ""
-    echo "Download the new MongoDB Shell (mongosh):"
-    echo "   https://www.mongodb.com/try/download/shell"
-    echo ""
+    if ! command -v mongosh &> /dev/null; then
+      echo ""
+      echo "NOTE: the legacy mongo shell is not included in MongoDB 6.0+ distributions"
+      echo ""
+
+      echo "Download the new MongoDB Shell (mongosh):"
+      echo "   https://www.mongodb.com/try/download/shell"
+      echo ""
+
+      # Convenience for macOS users
+      if [[ "$(uname)" == "Darwin" ]]; then
+        if command -v brew &> /dev/null; then
+          prompt_install "Install "mongosh" via brew?"
+          `brew install mongosh`
+        else
+          echo "Install via brew:"
+          echo "   brew install mongosh"
+        fi
+        echo ""
+      fi
+    fi
   fi
 
 }
