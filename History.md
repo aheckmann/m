@@ -1,3 +1,8 @@
+1.9.0 / 2024-03-17
+==================
+ * Fix: #78: Add version-based support for native arm64 Database Tools on macOS
+ * Fix: #95: Add info on installing mongosh via brew for macOS users
+
 1.8.9 / 2023-10-19
 ==================
  * Remove shell prompt from install examples so it doesn't get copied

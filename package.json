@@ -1,10 +1,12 @@
 {
   "name": "m",
-  "version": "1.8.9",
+  "version": "1.9.0",
   "description": "MongoDB version management",
   "homepage": "https://github.com/aheckmann/m",
   "bugs": "https://github.com/aheckmann/m/issues",
-  "bin": { "m": "./bin/m" },
+  "bin": {
+    "m": "./bin/m"
+  },
   "scripts": {
     "test": "echo \"Error: no test specified\" && exit 1"
   },
@@ -16,10 +18,13 @@
     "mongoose"
   ],
   "author": "Aaron Heckmann <aaron.heckmann+github@gmail.com>",
-  "contributors":[
+  "contributors": [
     "TJ Holowaychuk <tj@vision-media.ca>",
-    "Stephen Steneker <stennie@cpan.org>"
+    "Stennie Steneker <git@stennie.dev>"
   ],
   "license": "MIT",
-  "repository": { "type": "git", "url": "git://github.com/aheckmann/m.git" }
+  "repository": {
+    "type": "git",
+    "url": "git://github.com/aheckmann/m.git"
+  }
 }
