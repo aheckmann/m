@@ -377,13 +377,15 @@ install_tools_bin() {
     if vergte $version "100.1.0"; then
       ext="zip"
     fi
-    if [ "$arch" = "arm64" ]; then
-      echo ""
-      echo "NOTE: Apple Silicon is not natively supported for MongoDB Database Tools"
-      echo " ==> Changing detected architecture from arm64 to x86_64 so Rosetta 2 can be used"
-      echo "     More info: https://support.apple.com/en-au/HT211861"
-      echo ""
-      arch="x86_64"
+    if [[ "$arch" = "arm64" ]]; then
+      if verlte "$version" "100.7.0"; then
+        echo ""
+        echo "NOTE: Apple Silicon is not natively supported for this version of MongoDB Database Tools"
+        echo " ==> Changing detected architecture from arm64 to x86_64 so Rosetta 2 can be used"
+        echo "     More info: https://support.apple.com/en-au/HT211861"
+        echo ""
+        arch="x86_64"
+      fi
     fi
   fi
 
