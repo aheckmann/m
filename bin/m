@@ -929,6 +929,7 @@ get_distro_and_arch() {
     redhatenterpriseserver) distro_id="rhel" ;;
     rocky) distro_id="rhel" ;;
     neon) distro_id="ubuntu" ;;
+    pop) distro_id="ubuntu" ;;
   esac
 
   distro="$distro_id-$distro_version"
