@@ -983,6 +983,7 @@ get_distro_and_arch() {
     amzn-1) distros="$amazon1 rhel70 rhel62" ;;
     amzn-2018.03) distros="$amazon1 rhel70 rhel62" ;;
     amzn-2) distros="amazon2 $amazon1 rhel70 rhel62" ;;
+    amzn-2023) distros="amazon2023" ;;
     amzn-*) distros="amazon2 $amazon1" ;;
 
     rhel-5*) distros="rhel55 rhel57" ;;
