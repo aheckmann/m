@@ -107,7 +107,7 @@ GET=
 which wget >/dev/null 2>&1 && GET="wget -q -O-"
 
 # curl support
-which curl >/dev/null 2>&1 && GET="curl -s -L"
+which curl >/dev/null 2>&1 && GET="curl -s -S -L"
 
 # Ensure we have curl or wget
 
@@ -208,7 +208,7 @@ get_all_versions() {
 
     if [ -z "$all_versions" ]; then
       debug "get_all_versions(): $GET $src_url"
-      all_versions=`$GET 2> /dev/null $src_url`
+      all_versions=`$GET $src_url`
       if [ $CACHE ]; then
         debug "Creating cache: $CACHE_SRC"
         echo "$all_versions" > $CACHE_SRC
