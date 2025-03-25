@@ -437,7 +437,7 @@ get_all_tools_versions() {
     local rc_regex="(-rc[0-9]+)?"
   fi
 
-  tools_versions=`curl -s \
+  tools_versions=`curl -sSf \
   -H "Accept: application/vnd.github.v3+json" \
   https://api.github.com/repos/mongodb/mongo-tools/git/refs/tags \
   | sed -nE "s/^.*\"ref\"\: \"refs\/tags\/r?([[:digit:]]{2,3}\.[[:digit:]]+\.[[:digit:]]+)\",$/\1/p" \
