@@ -439,6 +439,7 @@ get_all_tools_versions() {
 
   curl_tools_versions=(curl -sSf -H "Accept: application/vnd.github.v3+json")
   if [ -n "${GH_TOKEN:-}" ]; then
+    debug "Using GitHub token from environment for API requests"
     curl_tools_versions+=(-H "authorization: bearer ${GH_TOKEN:?}")
   fi
   curl_tools_versions+=("https://api.github.com/repos/mongodb/mongo-tools/git/refs/tags")
