@@ -437,11 +437,15 @@ get_all_tools_versions() {
     local rc_regex="(-rc[0-9]+)?"
   fi
 
-  tools_versions=`curl -sSf \
-  -H "Accept: application/vnd.github.v3+json" \
-  https://api.github.com/repos/mongodb/mongo-tools/git/refs/tags \
+  curl_tools_versions=(curl -sSf -H "Accept: application/vnd.github.v3+json")
+  if [ -n "${GH_TOKEN:-}" ]; then
+    curl_tools_versions+=(-H "authorization: bearer ${GH_TOKEN:?}")
+  fi
+  curl_tools_versions+=("https://api.github.com/repos/mongodb/mongo-tools/git/refs/tags")
+
+  tools_versions="$("${curl_tools_versions[@]}" \
   | sed -nE "s/^.*\"ref\"\: \"refs\/tags\/r?([[:digit:]]{2,3}\.[[:digit:]]+\.[[:digit:]]+)\",$/\1/p" \
-  | sort -V`
+  | sort -V)"
 
   get_all_versions
 
