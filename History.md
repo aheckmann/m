@@ -1,3 +1,10 @@
+1.9.1 / 2025-03-29
+==================
+ * Use GitHub token from the environment for API requests if present (@gmishkin)
+ * Allow curl errors to bubble up to the terminal to help troubleshoot (@gmishkin)
+ * Add support for Amazon Linux 2023 (@JamesHeppenstall)
+ * Add support for Pop_OS! linux (@toto-dev)
+
 1.9.0 / 2024-03-17
 ==================
  * Fix: #78: Add version-based support for native arm64 Database Tools on macOS
