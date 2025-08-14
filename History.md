@@ -1,3 +1,10 @@
+1.9.3 / 2025-08-14
+==================
+ * Fix: display * next to active version
+ * Fix #85: show * next to v4.2.24 when active
+ * Docs: improve readme
+ * Add security.md
+
 1.9.2 / 2025-08-14
 ==================
  * Fix: monogsh installation on OSX
