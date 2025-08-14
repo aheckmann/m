@@ -3,21 +3,11 @@
 `m` helps you download, use, and manage multiple versions of the MongoDB server
 and command-line tools.
 
-This can be useful for development & testing environments. For example, testing
-release upgrades/downgrades or potential behavior differences between versions.
-
-Where possible `m` will try to download the distro-specific binaries for your
-O/S and version. If a binary appears to be unavailable, `m` will ask if you want
-to try building from source.
-
-NOTE: [Building MongoDB from source](https://github.com/mongodb/mongo/wiki/Build-Mongodb-From-Source)
-requires you to preinstall all of the relevant dependencies & toolchain to build
-the desired version of MongoDB. Installing those is outside the scope of what
-`m` does.
+<img src="./demo.gif" width="600px" alt="demo" />
 
 ## Prerequisites
 
-To install binary packages `m` requires a 64-bit O/S which:
+To install binary packages, `m` requires a 64-bit O/S which:
  - is a [Supported Platform for the version of MongoDB you are trying to install](https://docs.mongodb.com/manual/administration/production-notes/#supported-platforms)
  - includes the `bash` shell
 
@@ -31,86 +21,137 @@ Environments that should work include:
 
 `m` is a `bash` script which can be installed & updated via `npm` for convenience:
 
-    npm install -g m
+```bash
+npm install -g m
+# pnpm add -g m
+# yarn global add m
+```
 
 or installed by cloning the GitHub repo and running `make install`:
 
-    git clone https://github.com/aheckmann/m.git && cd m && make install
+```bash
+git clone https://github.com/aheckmann/m.git && cd m && make install
+```
 
 or fetched via `wget` and copied to a location of your choice:
 
-    wget https://raw.githubusercontent.com/aheckmann/m/master/bin/m && chmod +x ./m
+```bash
+wget https://raw.githubusercontent.com/aheckmann/m/master/bin/m && chmod +x ./m
+```
 
 ### Downloading MongoDB Binaries
 
-Specify a MongoDB server version to try download a binary package (if available for your current O/S) or switch to a previously downloaded copy. After `m` successfully downloads or switches to a specified version of MongoDB, those binaries will become the default in the install path (typically `$HOME/.local/bin/`; see _Details_ below for more information).
 
-    $ m 6.0.14
-    $ m 7.0.6
+To install or activate a previously installed version, run `m <version>`.
+For example:
+
+```bash
+$ m 7.0.14
+```
+
+Afterwards, those binaries will become the default in your install path (typically `$HOME/.local/bin/`; see [Details](#details) below for more information).
 
 You can also specify a release series to download the latest available revision:
 
-    $ m 6.0
-    $ m 7.0
+```bash
+$ m 7.0
+$ m 8.0
+```
 
 List installed binaries:
 
-    $ m
+```bash
+$ m
 
-      6.0.14
-    * 7.0.6
+    7.0.14
+  * 8.0.6
+```
 
 Use or download the latest official release:
 
-    $ m latest
+```bash
+$ m latest
+```
 
 Use or download the stable official release:
 
-    $ m stable
+```bash
+$ m stable
+```
 
 Check what the latest available release is:
 
-    $ m --latest
-    $ m --latest 7.0
+```bash
+$ m --latest
+$ m --latest 7.0
+```
 
 Check what the current stable release is:
 
-    $ m --stable
-    $ m --stable 7.0
+```bash
+$ m --stable
+$ m --stable 7.0
+```
 
 Download an Enterprise release:
 
-    $ m 7.0-ent
+```bash
+$ m 7.0-ent
+```
 
 Select a MongoDB version without prompting for confirmation if a download is required:
 
-    $ yes | m 7.0
+```bash
+$ yes | m 7.0
+```
+
+#### Notes
+
+Where possible `m` will try to download the distro-specific binaries for your
+O/S and version. If a binary appears to be unavailable, `m` will ask if you want
+to try building from source.
+
+[Building MongoDB from source](https://github.com/mongodb/mongo/wiki/Build-Mongodb-From-Source)
+requires you to preinstall all of the relevant dependencies & toolchain to build
+the desired version of MongoDB. Installing those is outside the scope of what
+`m` does.
+
 
 ### Downloading MongoDB Database Tools
 
-The Database Tools (mongodump, mongorestore, etc.) are now released separately from the server. You can use `m` to manage your MongoDB Database Tools version independently of your MongoDB server and shell versions.
+The Database Tools (mongodump, mongorestore, etc.) are released separately from the server. You can use `m` to manage your MongoDB Database Tools version independently of your MongoDB server and shell versions.
 
 List available Database Tools versions:
 
-    $ m tools ls
+```bash
+$ m tools ls
+```
 
 List installed Database Tools versions:
 
-    $ m tools installed
+```bash
+$ m tools installed
+```
 
 Use or download the latest stable release of the Database Tools:
 
-    $ m tools stable
+```bash
+$ m tools stable
+```
 
 Use or download a specific version of the Database Tools:
 
-    $ m tools 100.9.4
+```bash
+$ m tools 100.9.4
+```
 
 ### Removing Binaries
 
 Remove some previously installed versions:
 
-    $  m rm 6.0.13 7.0.5
+```bash
+$  m rm 6.0.13 7.0.5
+```
 
 ### Binary Usage
 
@@ -118,49 +159,65 @@ Multiple versions of MongoDB can be downloaded and targeted directly.
 
 Ask `m` for the binary path for a specific version that has already been downloaded:
 
-    $ m bin 7.0.6
-    /Users/bobbytables/.local/m/versions/7.0.6/bin
+```bash
+$ m bin 7.0.6
+/Users/bobbytables/.local/m/versions/7.0.6/bin
+```
 
 Start up `mongod` 6.0.13 regardless of the active version:
 
-    $ m use 6.0.13 --port 29000 --dbpath ./data/
+```bash
+$ m use 6.0.13 --port 29000 --dbpath ./data/
+```
 
 When installing or changing the active version you might want to run custom scripts:
 
-    $ m pre install /path/to/my/script
-    $ m post install /path/to/script
-    $ m pre change /path/to/my/script
-    $ m post change /path/to/script
+```bash
+$ m pre install /path/to/my/script
+$ m post install /path/to/script
+$ m pre change /path/to/my/script
+$ m post change /path/to/script
+```
 
 Multiple scripts may be added for any event. To add two `pre change` scripts:
 
-    $ m pre change /path/to/script1
-    $ m pre change /path/to/script2
+```bash
+$ m pre change /path/to/script1
+$ m pre change /path/to/script2
+```
 
 Scripts are executed in the order they were added.
 
 List all pre change hooks:
 
-    $ m pre change
+```bash
+$ m pre change
 
-    /path/to/script1
-    /path/to/script2
+/path/to/script1
+/path/to/script2
+```
 
 List all post install hooks:
 
-    $ m post install
+```bash
+$ m post install
 
-    /path/to/scriptA
-    /path/to/scriptB
-    /path/to/scriptC
+/path/to/scriptA
+/path/to/scriptB
+/path/to/scriptC
+```
 
 To remove a post install hook:
 
-    $ m post install rm /path/to/scriptB
+```bash
+$ m post install rm /path/to/scriptB
+```
 
 To remove all post install hooks:
 
-    $ m post install rm
+```bash
+$ m post install rm
+```
 
 ## Usage
 
@@ -197,7 +254,7 @@ Output from `m --help`:
     m pre <event> rm [script]    Remove pre <event> script
     m post <event> rm [script]   Remove post <event> script
     m tools stable               Install or activate the latest stable Database Tools release
-    m tools X.Y.Z                Install or activate the Database Tools X.Y.Z 
+    m tools X.Y.Z                Install or activate the Database Tools X.Y.Z
     m tools ls                   Output the versions of the Database Tools available
     m tools installed [--json]   Output installed versions of the Database Tools available
 
@@ -226,7 +283,7 @@ Output from `m --help`:
  By default `m` downloads MongoDB binaries to _~/.local/m/versions_ in subdirectories named after the release version (6.0.14, 7.0.6, ...). MongoDB Database Tools binaries are downloaded to _~/.local/m/tools/versions_ in subdirectories named after the release version (100.0.0, 100.0.1, ...). Activated MongoDB binaries are symlinked into the `bin` directory in _~/.local/bin_.  To alter where `m` operates, export the __M_PREFIX__ environment variable with your preferred path prefix.
 
 Previously downloaded versions of MongoDB can be activated using `m <version>` or
-selected using of the variations in the _Binary Usage_ section above. 
+selected using of the variations in the _Binary Usage_ section above.
 
 ## License
 
