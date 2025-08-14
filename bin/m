@@ -300,7 +300,7 @@ install_tools() {
     local rc="--rc"
   fi
   get_all_tools_versions $rc
-  
+
   if [[ $version == "stable" ]]; then
     # Set version to the latest available version
     version=`echo $versions | awk 'NF>1{print $NF}'`
@@ -402,7 +402,7 @@ install_tools_bin() {
   mkdir -p $TOOLS_DIR/$version
   if [[ $ext = "zip" ]]; then
     unzip -q $M_DIR/tools-$version.zip -d $TOOLS_DIR/$version
-  else 
+  else
     tar -xzf $M_DIR/tools-$version.tgz -C $TOOLS_DIR/$version
   fi
   mv $TOOLS_DIR/$version/mongodb-database-tools-$dist-$arch-$version/* $TOOLS_DIR/$version
@@ -638,7 +638,7 @@ install_mongo() {
     abort "Could not find any releases for the requested version\n"
   fi
 
-  
+
   local dir=$VERSIONS_DIR/$version
   if ! test -d $dir; then
     # install
@@ -672,7 +672,6 @@ install_mongo() {
       echo ""
       echo "NOTE: the legacy mongo shell is not included in MongoDB 6.0+ distributions"
       echo ""
-
       echo "Download the new MongoDB Shell (mongosh):"
       echo "   https://www.mongodb.com/try/download/shell"
       echo ""
@@ -681,7 +680,7 @@ install_mongo() {
       if [[ "$(uname)" == "Darwin" ]]; then
         if command -v brew &> /dev/null; then
           prompt_install "Install "mongosh" via brew?"
-          `brew install mongosh`
+          brew install mongosh --quiet
         else
           echo "Install via brew:"
           echo "   brew install mongosh"
