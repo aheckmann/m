@@ -39,7 +39,7 @@ CACHE_SRC=${M_CACHE_SRC:-$M_DIR/cache-src.json}
 CACHE_EXPIRY=${M_CACHE_EXPIRY:-3600}
 
 # m version
-VERSION="1.9.1"
+VERSION="1.9.2"
 
 #
 # Log the given <msg ...>
@@ -152,7 +152,7 @@ display_help() {
     m pre <event> rm [script]    Remove pre <event> script
     m post <event> rm [script]   Remove post <event> script
     m tools stable               Install or activate the latest stable Database Tools release
-    m tools X.Y.Z                Install or activate the Database Tools X.Y.Z 
+    m tools X.Y.Z                Install or activate the Database Tools X.Y.Z
     m tools ls                   Output the versions of the Database Tools available
     m tools installed [--json]   Output installed versions of the Database Tools available
 
@@ -278,8 +278,8 @@ display_versions() {
 }
 
 #
-# Install and activate MongoDB Database Tools. 
-# Will install the full server for version <4.3.2 since the tools 
+# Install and activate MongoDB Database Tools.
+# Will install the full server for version <4.3.2 since the tools
 # are included with the server for those versions.
 #
 #   install_tools <version>

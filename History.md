@@ -1,3 +1,7 @@
+1.9.2 / 2025-08-14
+==================
+ * Fix: monogsh installation on OSX
+
 1.9.1 / 2025-03-29
 ==================
  * Use GitHub token from the environment for API requests if present (@gmishkin)
