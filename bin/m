@@ -110,7 +110,6 @@ which wget >/dev/null 2>&1 && GET="wget -q -O-"
 which curl >/dev/null 2>&1 && GET="curl -sSLf"
 
 # Ensure we have curl or wget
-
 test -z "$GET" && abort "curl or wget required"
 
 #
