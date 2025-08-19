@@ -192,27 +192,27 @@ display_m_version() {
 #
 
 get_all_versions() {
-    local src_url="https://downloads.mongodb.org/full.json"
+  local src_url="https://downloads.mongodb.org/full.json"
 
-    if [ $CACHE == 1 ]; then
-        # Use the cached versions if valid
-        if [ -e $CACHE_SRC ]; then
-          debug "$CACHE_SRC is $(file_age_in_seconds $CACHE_SRC) seconds old (expiry: $CACHE_EXPIRY)"
-          if [ $(file_age_in_seconds $CACHE_SRC) -lt $CACHE_EXPIRY ]; then
-            debug "Using cache: $CACHE_SRC"
-            all_versions=`cat $CACHE_SRC`
-          fi
-        fi
-    fi
-
-    if [ -z "$all_versions" ]; then
-      debug "get_all_versions(): $GET $src_url"
-      all_versions=`$GET $src_url`
-      if [ $CACHE ]; then
-        debug "Creating cache: $CACHE_SRC"
-        echo "$all_versions" > $CACHE_SRC
+  if [ $CACHE == 1 ]; then
+    # Use the cached versions if valid
+    if [ -e $CACHE_SRC ]; then
+      debug "$CACHE_SRC is $(file_age_in_seconds $CACHE_SRC) seconds old (expiry: $CACHE_EXPIRY)"
+      if [ $(file_age_in_seconds $CACHE_SRC) -lt $CACHE_EXPIRY ]; then
+        debug "Using cache: $CACHE_SRC"
+        all_versions=`cat $CACHE_SRC`
       fi
     fi
+  fi
+
+  if [ -z "$all_versions" ]; then
+    debug "get_all_versions(): $GET $src_url"
+    all_versions=`$GET $src_url`
+    if [ $CACHE ]; then
+      debug "Creating cache: $CACHE_SRC"
+      echo "$all_versions" > $CACHE_SRC
+    fi
+  fi
 }
 
 #
@@ -220,11 +220,11 @@ get_all_versions() {
 #
 
 check_current_version() {
-  which mongod &> /dev/null
+  which $M_BIN_DIR/mongod &> /dev/null
   if test $? -eq 0; then
-    active=`mongod --version | grep "version\s*v[0-9]" | grep -E -o '[0-9]+\.[0-9]+\.[0-9]+([-_\.][a-zA-Z0-9]+)?' | head -1`
+    active=`$M_BIN_DIR/mongod --version | grep "version\s*v[0-9]" | grep -E -o '[0-9]+\.[0-9]+\.[0-9]+([-_\.][a-zA-Z0-9]+)?' | head -1`
     # either has "modules" set to something other than none or [], or includes the string "enterprise"
-    ent=`mongod --version | grep -E '(modules\"?:|\"?enterprise\"?)' | grep -v -E 'modules"?:[[:space:]]*\[.*' | grep -v -E 'modules"?:[[:space:]]*none'`
+    ent=`$M_BIN_DIR/mongod --version | grep -E '(modules\"?:|\"?enterprise\"?)' | grep -v -E 'modules"?:[[:space:]]*\[.*' | grep -v -E 'modules"?:[[:space:]]*none'`
     if [[ $ent == *1 ]]; then
       active="$active-ent"
     fi
@@ -240,16 +240,23 @@ display_versions() {
   local option=$1; shift
   local json=false
 
+  if test "$option" = "--json"; then
+    json=true
+  fi
+
   declare -a versions
   versions=(`ls -1 $VERSIONS_DIR | sort -t. -k 1,1n -k 2,2n -k 3,3n`)
   if test -z "$versions"; then
-    echo No installed versions
+    if $json; then
+      echo "[]"
+    else
+      echo "No installed versions"
+    fi
     return
   fi
   local last=${versions[${#versions[@]}-1]}
 
-  if test "$option" = "--json"; then
-    json=true
+  if $json; then
     printf "["
   fi
 
@@ -417,10 +424,10 @@ install_tools_bin() {
 #
 
 check_current_tools_version() {
-  which mongodump &> /dev/null
+  which $M_BIN_DIR/mongodump &> /dev/null
   if test $? -eq 0; then
     # Note: this regex only works for mongodump 3.0+
-    active_tools=`mongodump --version | sed -nE "s/mongodump version\: r?(.*)$/\1/p"`
+    active_tools=`$M_BIN_DIR/mongodump --version | sed -nE "s/mongodump version\: r?(.*)$/\1/p"`
   fi
 }
 
@@ -518,20 +525,27 @@ verlt() {
 display_tools_versions() {
   local option=$1; shift
   local json=false
+  if test "$option" = "--json"; then
+    json=true
+  fi
 
   declare -a versions
   if [ -e $TOOLS_DIR ]; then
     versions=(`(ls -1 $VERSIONS_DIR; ls -1 $TOOLS_DIR) | sort -t. -k 1,1n -k 2,2n -k 3,3n`)
   fi
 
+
   if test -z "$versions"; then
-    echo "No installed versions"
+    if $json; then
+      echo "[]"
+    else
+      echo "No installed versions"
+    fi
     return
   fi
   local last=${versions[${#versions[@]}-1]}
 
-  if test "$option" = "--json"; then
-    json=true
+  if $json; then
     printf "["
   fi
 
@@ -1115,11 +1129,13 @@ remove_versions() {
     debug "=> Path: $rmpath"
     if test "$version" = "$active"; then
       printf "WARNING: $version is the active version!\n"
-      read -p "Are you sure you want to remove this? [y/N] " yn
-      case $yn in
-        [Yy]* ) ;;
-        * )  printf "SKIPPING $version "; exit;;
-      esac
+      if [[ "$CONFIRM" == 1 ]]; then
+        read -p "Are you sure you want to remove this? [y/N] " yn
+        case $yn in
+          [Yy]* ) ;;
+          * )  printf "SKIPPING $version "; exit;;
+        esac
+      fi
     fi
 
     if [ -d $rmpath ]; then
@@ -1255,10 +1271,11 @@ display_latest_version() {
 
   if [[ $version =~ ^[0-9]\.[0-9]+$ ]]; then
     echo $all_versions \
-      | grep -E -o "$version\.[0-9]+([-_\.]rc[0-9]+)?" \
-      | grep -E -v "\d-\d" \
-      | uniq \
+      | grep -Eo "version\":[[:space:]]*\"$version\.[0-9]+([-_\.]rc[0-9]+)?" \
+      | sed 's/version\":[[:space:]]*\"//' \
+      | grep -Ev "\d-\d" \
       | sort -u -k 1,1n -k 2,2n -k 3,3n -t . \
+      | uniq \
       | tail -n1
   else
     if [[ ! -z "$version" ]]; then
@@ -1287,18 +1304,20 @@ display_latest_stable_version() {
   if [[ $version =~ ^[0-4]\.[0246]+$ ]]; then
     debug "Stable version < 5.0 ($version) is X.Y (Y is even)"
     echo $all_versions \
-      | grep -E -o "$version\.[0-9]+" \
+      | grep -Eo "version\":[[:space:]]*\"($version\.[0-9]+)" \
+      | sed 's/version\":[[:space:]]*\"//' \
       | grep -E -v "\d-\d" \
-      | uniq \
       | sort -u -k 1,1n -k 2,2n -k 3,3n -t . \
+      | uniq \
       | tail -n1
   elif [[ $version =~ ^[5-9]\.0$ ]]; then
     debug "Stable version >= 5.0 ($version) is X.0"
     echo $all_versions \
-      | grep -E -o "$version\.[0-9]+" \
+      | grep -Eo "version\":[[:space:]]*\"($version\.[0-9]+)" \
+      | sed 's/version\":[[:space:]]*\"//' \
       | grep -E -v "\d-\d" \
-      | uniq \
       | sort -u -k 1,1n -k 2,2n -k 3,3n -t . \
+      | uniq \
       | tail -n1
   else
     if [[ ! -z "$version" ]]; then
