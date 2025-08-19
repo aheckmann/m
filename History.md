@@ -1,3 +1,11 @@
+1.9.4 / 2025-08-19
+==================
+ * Fix: honor M_BIN_DIR when checking current versions
+ * Fix: honor --json flag in all cases
+ * Fix: honor CONFIRM flag when removing versions
+ * Test: added CI suite
+ * AI: add .github/instructions
+
 1.9.3 / 2025-08-14
 ==================
  * Fix: display * next to active version
