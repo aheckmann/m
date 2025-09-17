@@ -7,6 +7,13 @@
   "bin": {
     "m": "./bin/m"
   },
+  "files": [
+    "/bin",
+    "/History.md",
+    "/LICENSE",
+    "/README.md",
+    "/SECURITY.md"
+  ],
   "scripts": {
     "test": "node test/suite.mjs"
   },
@@ -19,7 +26,6 @@
   ],
   "author": "Aaron Heckmann <aaron.heckmann+github@gmail.com>",
   "contributors": [
-    "TJ Holowaychuk <tj@vision-media.ca>",
     "Stennie Steneker <git@stennie.dev>"
   ],
   "license": "MIT",
