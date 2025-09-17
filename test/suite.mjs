@@ -10,14 +10,16 @@ import { tmpdir } from 'node:os';
 const M_BIN = resolve('.', 'bin', 'm');
 const M_PREFIX = join(tmpdir(), 'm-test-' + Date.now());
 
-function run(args = [], timeout = 20000) {
+function run(args = [], opts = {}) {
+  const timeout = opts.timeout ?? 60_000;
   return new Promise((resolve) => {
     const env = {
       ...process.env,
+      M_CACHE: '0',
+      M_DEBUG: '0',
+      ...opts.env ?? {},
       M_PREFIX,
       M_CONFIRM: '0',
-      M_CACHE: '0',
-      M_DEBUG: '0'
     };
 
     const child = spawn(M_BIN, args, { env });
@@ -117,51 +119,38 @@ describe('m - MongoDB Version Management', { concurrency: 5 }, () => {
   });
 
   describe('Version Listing Commands', () => {
-    test('should list available versions with ls', async () => {
-      const result = await run(['ls']);
-      assert.equal(result.exitCode, 0);
-      // Should contain some version numbers
-      assert.match(result.stdout, /\d+\.\d+\.\d+/);
-    });
-
-    test('should list available versions with list alias', async () => {
-      const result = await run(['list']);
-      assert.equal(result.exitCode, 0);
-      assert.match(result.stdout, /\d+\.\d+\.\d+/);
-    });
-
-    test('should list available versions with available alias', async () => {
-      const result = await run(['available'], 30000);
-      assert.equal(result.exitCode, 0);
-      assert.match(result.stdout, /\d+\.\d+\.\d+/, result.stdout);
-    });
-
-    test('should list available versions with avail alias', async () => {
-      const result = await run(['avail'], 30000);
-      assert.equal(result.exitCode, 0);
-      assert.match(result.stdout, /\d+\.\d+\.\d+/, result.stdout);
+    describe('Aliases for ls command', { concurrency: 1 }, () => {
+      const aliases = ['ls', 'list', 'available', 'avail'];
+      for (const alias of aliases) {
+        test(`should list available versions with "${alias}" alias`, async () => {
+          const result = await run([alias], { env: { M_CACHE: '1' } });
+          assert.equal(result.exitCode, 0);
+          // Should contain some version numbers
+          assert.match(result.stdout, /\d+\.\d+\.\d+/);
+        });
+      }
     });
 
     test('should show latest stable version with --stable', async () => {
-      const result = await run(['--stable'], 30000);
+      const result = await run(['--stable']);
       assert.equal(result.exitCode, 0, result.stdout);
       assert.match(result.stdout, /^\d+\.\d+\.\d+\n$/, result.stdout);
     });
 
     test('should show latest version with --latest', async () => {
-      const result = await run(['--latest'], 30000);
+      const result = await run(['--latest']);
       assert.equal(result.exitCode, 0);
       assert.match(result.stdout, /^\d+\.\d+\.\d+/, result.stdout);
     });
 
     test('should show latest stable version for series with --stable X.Y', async () => {
-      const result = await run(['--stable', '7.0'], 30000);
+      const result = await run(['--stable', '7.0']);
       assert.equal(result.exitCode, 0);
       assert.match(result.stdout, /^7\.0\.\d+\n$/, result.stdout);
     });
 
     test('should show latest version for series with --latest X.Y', async () => {
-      const result = await run(['--latest', '7.0'], 30000);
+      const result = await run(['--latest', '7.0']);
       assert.equal(result.exitCode, 0);
       assert.match(result.stdout, /^7\.0\.\d+/, result.stdout);
     });
@@ -205,19 +194,19 @@ describe('m - MongoDB Version Management', { concurrency: 5 }, () => {
     });
 
     test('should install the given version', async () => {
-      const result = await run([version], 60000);
+      const result = await run([version]);
       assert.equal(result.exitCode, 0);
       assert.match(result.stdout, new RegExp(`Activating: MongoDB Server ${version}`, 'i'));
     });
 
     test('should reactivate the version if already installed', async () => {
-      const result = await run([version], 60000);
+      const result = await run([version]);
       assert.equal(result.exitCode, 0);
       assert.match(result.stdout, new RegExp(`Already Active: MongoDB Server ${version}`, 'i'));
     });
 
     test('should reinstall the version if already installed', async () => {
-      const result = await run(['reinstall', version], 60000);
+      const result = await run(['reinstall', version]);
       assert.equal(result.exitCode, 0);
       assert.match(result.stdout, new RegExp(`Removed MongoDB version ${version}`, 'i'));
       assert.match(result.stdout, new RegExp(`Activating: MongoDB Server ${version}`, 'i'));
