@@ -3,7 +3,7 @@
 `m` helps you download, use, and manage multiple versions of the MongoDB server
 and command-line tools.
 
-<img src="./demo.gif" width="600px" alt="demo" />
+<img src="https://raw.githubusercontent.com/aheckmann/m/master/demo.gif" width="600px" alt="demo" />
 
 ## Prerequisites
 
