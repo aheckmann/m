@@ -1,3 +1,7 @@
+1.9.5 / 2025-09-17
+==================
+ * Fix: ubuntu 24 support [#154](https://github.com/aheckmann/m/issues/154)
+
 1.9.4 / 2025-08-19
 ==================
  * Fix: honor M_BIN_DIR when checking current versions
