@@ -1,3 +1,7 @@
+1.9.6 / 2025-09-18
+==================
+ * Fix: mongo 4.2 installation on ubuntu 22 [#156](https://github.com/aheckmann/m/issues/156)
+
 1.9.5 / 2025-09-17
 ==================
  * Fix: ubuntu 24 support [#154](https://github.com/aheckmann/m/issues/154)
