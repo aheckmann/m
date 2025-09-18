@@ -16,7 +16,6 @@ function run(args = [], opts = {}) {
     const env = {
       ...process.env,
       M_CACHE: '0',
-      M_DEBUG: '0',
       ...opts.env ?? {},
       M_PREFIX,
       M_CONFIRM: '0',
