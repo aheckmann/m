@@ -217,15 +217,18 @@ describe('m - MongoDB Version Management', { concurrency: 5 }, () => {
       assert.match(result.stdout, new RegExp(`Removed MongoDB version ${version}`, 'i'));
     });
 
-    test('one-off test for #156', async () => {
-      const version = '4.2';
-      const result1 = await run([version]);
-      assert.equal(result1.exitCode, 0);
-      assert.match(result1.stdout, new RegExp(`Activating: MongoDB Server ${version}`, 'i'));
-      const result2 = await run();
-      assert.equal(result2.exitCode, 0);
-      assert.match(result2.stdout, new RegExp(version, 'i'));
-    })
+    if (process.env.ImageOS === 'ubuntu22') {
+      test('mongo 4.2 installs on ubuntu22 - #156', async () => {
+        const version = '4.2';
+        const result1 = await run([version], { env: { M_DEBUG: '1' } });
+        console.log('debug\n', result1.stderr.split('\n').map(l => `  ${l}`).join('\n'));
+        assert.match(result1.stdout, new RegExp(`Activating: MongoDB Server ${version}`, 'i'));
+        assert.equal(result1.exitCode, 0);
+        const result2 = await run();
+        assert.match(result2.stdout, new RegExp(version, 'i'));
+        assert.equal(result2.exitCode, 0);
+      })
+    }
   });
 
   describe('Source URL Commands', () => {

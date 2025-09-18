@@ -27,10 +27,8 @@ jobs:
       - name: 🟢 Setup Node.js runtime
         uses: actions/setup-node@v4
         with:
-          node-version: 'lts/*'
+          node-version: '24.x'
           check-latest: true
 
       - name: 🧪 Run tests
-        env:
-          M_DEBUG: '1'
         run: npm test
