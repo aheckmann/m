@@ -15,7 +15,7 @@
     "/SECURITY.md"
   ],
   "scripts": {
-    "test": "node test/suite.mjs"
+    "test": "node test/suite.mjs --test-only"
   },
   "keywords": [
     "mongodb",

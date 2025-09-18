@@ -12,7 +12,11 @@ concurrency:
 jobs:
   ci:
     name: Test
-    runs-on: ubuntu-latest
+    strategy:
+      fail-fast: false
+      matrix:
+        os: [ubuntu-latest, ubuntu-22.04]
+    runs-on: ${{ matrix.os }}
     timeout-minutes: 5
     steps:
       - name: 📥 Checkout repository
@@ -23,7 +27,7 @@ jobs:
       - name: 🟢 Setup Node.js runtime
         uses: actions/setup-node@v4
         with:
-          node-version: 'lts/*'
+          node-version: '24.x'
           check-latest: true
 
       - name: 🧪 Run tests
