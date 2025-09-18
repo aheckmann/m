@@ -216,6 +216,16 @@ describe('m - MongoDB Version Management', { concurrency: 5 }, () => {
       assert.equal(result.exitCode, 0);
       assert.match(result.stdout, new RegExp(`Removed MongoDB version ${version}`, 'i'));
     });
+
+    test('one-off test for #156', async () => {
+      const version = '4.2';
+      const result1 = await run([version]);
+      assert.equal(result1.exitCode, 0);
+      assert.match(result1.stdout, new RegExp(`Activating: MongoDB Server ${version}`, 'i'));
+      const result2 = await run();
+      assert.equal(result2.exitCode, 0);
+      assert.match(result2.stdout, new RegExp(version, 'i'));
+    })
   });
 
   describe('Source URL Commands', () => {
