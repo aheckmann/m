@@ -5,6 +5,8 @@ and command-line tools.
 
 <img src="https://raw.githubusercontent.com/aheckmann/m/master/demo.gif" width="600px" alt="demo" />
 
+For an excellent deep dive about this project, check out the [DeepWiki](https://deepwiki.com/aheckmann/m) documentation.
+
 ## Prerequisites
 
 To install binary packages, `m` requires a 64-bit O/S which:
