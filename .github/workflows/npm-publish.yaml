@@ -2,9 +2,9 @@ name: NPM Publish
 
 # Trigger only when tags matching semver format are pushed
 # Patterns match common semver formats:
-#   - v1.0.0 (standard)
-#   - v1.0.0-alpha (pre-release)
-#   - v1.0.0-beta.1 (pre-release with number)
+#   - 1.0.0 (standard)
+#   - 1.0.0-alpha (pre-release)
+#   - 1.0.0-beta.1 (pre-release with number)
 #
 # Note: GitHub Actions uses glob patterns (not full regex), which limits
 # complex semver matching. These patterns cover most npm publishing scenarios.
@@ -13,9 +13,9 @@ name: NPM Publish
 "on":
   push:
     tags:
-      - 'v[0-9]+.[0-9]+.[0-9]+'
-      - 'v[0-9]+.[0-9]+.[0-9]+-[a-zA-Z0-9]+'
-      - 'v[0-9]+.[0-9]+.[0-9]+-[a-zA-Z0-9]+.[0-9]+'
+      - '[0-9]+.[0-9]+.[0-9]+'
+      - '[0-9]+.[0-9]+.[0-9]+-[a-zA-Z0-9]+'
+      - '[0-9]+.[0-9]+.[0-9]+-[a-zA-Z0-9]+.[0-9]+'
 
 # Permissions for NPM trusted publishing with provenance
 permissions:

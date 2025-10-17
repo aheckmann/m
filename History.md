@@ -1,3 +1,8 @@
+1.9.7 / 2025-10-17
+==================
+ * Docs: add deepwiki link
+ * CI: pin actions and use trusted publishing
+
 1.9.6 / 2025-09-18
 ==================
  * Fix: mongo 4.2 installation on ubuntu 22 [#156](https://github.com/aheckmann/m/issues/156)
