@@ -147,6 +147,34 @@ Use or download a specific version of the Database Tools:
 $ m tools 100.9.4
 ```
 
+### Downloading MongoDB Shell
+
+The MongoDB Shell (mongosh) is released separately from the server. You can use `m` to manage your MongoDB Shell version independently of your MongoDB server and tools versions.
+
+List available MongoDB Shell versions:
+
+```bash
+$ m shell ls
+```
+
+List installed MongoDB Shell versions:
+
+```bash
+$ m shell installed
+```
+
+Use or download the latest stable release of the MongoDB Shell:
+
+```bash
+$ m shell stable
+```
+
+Use or download a specific version of the MongoDB Shell:
+
+```bash
+$ m shell 2.3.7
+```
+
 ### Removing Binaries
 
 Remove some previously installed versions:
@@ -238,7 +266,7 @@ Output from `m --help`:
     m <version> --legacy         Install generic Linux version (does not include SSL)
     m use <version> [args ...]   Execute mongod <version> with [args ...]
     m shard <version> [args ...] Execute mongos <version> with [args ...]
-    m shell <version> [args ...] Open a mongo shell <version> with [args ...]
+    m s <version> [args ...]     Open a mongo shell <version> with [args ...]
     m bin <version>              Output bin path for <version>
     m rm <version ...>           Remove the given version(s)
     m --stable                   Output the latest stable MongoDB version available
@@ -259,6 +287,10 @@ Output from `m --help`:
     m tools X.Y.Z                Install or activate the Database Tools X.Y.Z
     m tools ls                   Output the versions of the Database Tools available
     m tools installed [--json]   Output installed versions of the Database Tools available
+    m shell stable               Install or activate the latest stable MongoDB Shell release
+    m shell X.Y.Z                Install or activate the MongoDB Shell X.Y.Z
+    m shell ls                   Output the versions of the MongoDB Shell available
+    m shell installed [--json]   Output installed versions of the MongoDB Shell available
 
   Events:
 
@@ -274,7 +306,7 @@ Output from `m --help`:
 
     installed  lls
     shard      sd, mongos
-    shell      s, sh, mongo
+    mongo      s, sh
     list       ls, available, avail
     use        as, mongod
     which      bin
