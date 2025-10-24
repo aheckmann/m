@@ -175,7 +175,7 @@ Use or download a specific version of the MongoDB Shell:
 $ m shell 2.3.7
 ```
 
-**Note:** The `m shell <version>` command without additional arguments will install/activate the specified mongosh version. For backward compatibility, `m shell <version> [args...]` with additional arguments will execute the legacy `mongo` shell from the specified MongoDB server version. To execute a mongo shell without ambiguity, use the `m s <version> [args...]` alias instead.
+**Note:** To execute the legacy `mongo` shell from a specific MongoDB server version, use `m s <version> [args...]` or `m mongo <version> [args...]` instead.
 
 ### Removing Binaries
 
@@ -269,7 +269,6 @@ Output from `m --help`:
     m use <version> [args ...]   Execute mongod <version> with [args ...]
     m shard <version> [args ...] Execute mongos <version> with [args ...]
     m s <version> [args ...]     Open a mongo shell <version> with [args ...]
-    m shell <version> [args ...] Open a mongo shell <version> with [args ...] (legacy)
     m bin <version>              Output bin path for <version>
     m rm <version ...>           Remove the given version(s)
     m --stable                   Output the latest stable MongoDB version available

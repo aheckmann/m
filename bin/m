@@ -137,7 +137,6 @@ display_help() {
     m use <version> [args ...]   Execute mongod <version> with [args ...]
     m shard <version> [args ...] Execute mongos <version> with [args ...]
     m s <version> [args ...]     Open a mongo shell <version> with [args ...]
-    m shell <version> [args ...] Open a mongo shell <version> with [args ...] (legacy)
     m bin <version>              Output bin path for <version>
     m rm <version ...>           Remove the given version(s)
     m --stable                   Output the latest stable MongoDB version available
@@ -1780,40 +1779,12 @@ handle_tools() {
 # Handle shell commands
 
 handle_shell() {
-  # For backward compatibility, check if this is shell execution
-  # Shell execution: m shell <version> <args...>
-  # Shell installation: m shell <subcommand|version>
-  
-  local first_arg="$1"
-  local second_arg="$2"
-  
-  # Known installation subcommands
-  case "$first_arg" in
-    ls|list|available|avail)
-      list_shell_versions $@
-      exit
-      ;;
-    lls|installed)
-      display_shell_versions "$second_arg"
-      exit
-      ;;
-    stable)
-      install_shell $@
-      exit
-      ;;
-    *)
-      # Check if there are additional args beyond the version
-      # If yes, it's shell execution (backward compat)
-      if [[ -n "$second_arg" ]]; then
-        execute_shell_with_version $@
-        exit
-      else
-        # No additional args, treat as installation
-        install_shell $@
-        exit
-      fi
-      ;;
-  esac
+  case $1 in
+      ls|list|available|avail) list_shell_versions $@; exit;;
+      lls|installed) display_shell_versions $2; exit ;;
+      stable) install_shell $@; exit ;;
+      *) install_shell $@; exit ;;
+    esac
 }
 
 # Handle arguments
