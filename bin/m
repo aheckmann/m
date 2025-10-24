@@ -686,7 +686,7 @@ display_shell_versions() {
       fi
     else
       if [ "$version" = "$active_shell" ]; then
-        printf "   $version $config\n"
+        printf "  * $version $config\n"
       else
         printf "    $version $config\n"
       fi
@@ -777,16 +777,27 @@ install_shell() {
   if [[ $version =~ "rc" ]]; then
     local rc="--rc"
   fi
-  get_all_shell_versions $rc
-
+  
   if [[ $version == "stable" ]]; then
+    # Need to fetch versions to find the latest
+    get_all_shell_versions $rc
+    if [[ -z "$versions" ]]; then
+      printf "Could not fetch available versions of MongoDB Shell\n"
+      exit 1
+    fi
     # Set version to the latest available version
     version=`echo $versions | awk 'NF>1{print $NF}'`
-  fi
-
-  if [[ ! $versions =~ $version ]]; then
-    printf "Could not find any releases for the requested version "$version" of MongoDB Shell\n"
-    exit 1;
+  elif [[ $version =~ ^[0-9]+\.[0-9]+\.[0-9]+$ ]]; then
+    # Specific version provided, try to install it directly
+    # (only validate if we successfully fetched versions)
+    get_all_shell_versions $rc
+    if [[ ! -z "$versions" ]] && [[ ! $versions =~ $version ]]; then
+      printf "Could not find any releases for the requested version "$version" of MongoDB Shell\n"
+      exit 1
+    fi
+  else
+    printf "Invalid version format: $version\n"
+    exit 1
   fi
 
   local dir=$SHELL_DIR/$version
