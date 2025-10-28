@@ -1,3 +1,7 @@
+1.9.8 / 2025-10-28
+==================
+* fix: allow ubuntu 24 to fetch mongodb versions links provided for ubuntu 18 [#159](https://github.com/aheckmann/m/pull/159) (@genepix)
+
 1.9.7 / 2025-10-17
 ==================
  * Docs: add deepwiki link
