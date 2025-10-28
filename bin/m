@@ -984,7 +984,7 @@ get_distro_and_arch() {
     ubuntu-18*) distros="ubuntu1804 ubuntu1604" ;;
     ubuntu-20*) distros="ubuntu2004 ubuntu1804" ;;
     ubuntu-22*) distros="ubuntu2204 ubuntu2004 ubuntu1804" ;; # see #156
-    ubuntu-24*) distros="ubuntu2404 ubuntu2204 ubuntu2004" ;;
+    ubuntu-24*) distros="ubuntu2404 ubuntu2204 ubuntu2004 ubuntu1804" ;;
     ubuntu-*)   distros="ubuntu2404 ubuntu2204 ubuntu2004" ;;
 
     linuxmint-17*) distros="ubuntu1404" ;;
