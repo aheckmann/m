@@ -189,7 +189,9 @@ describe('m - MongoDB Version Management', { concurrency: 5 }, () => {
 
     before(async () => {
       const uninstalled = await getUninstalledVersions();
-      version = uninstalled[uninstalled.length - 1];
+      // race conditions in the mongodb release process may cause latest to not
+      // be installable so we pick the second to last uninstalled version.
+      version = uninstalled[uninstalled.length - 2];
     });
 
     test('should install the given version', async () => {
