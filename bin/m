@@ -374,19 +374,18 @@ install_tools_bin() {
   log "installing binary"
 
   ext="tgz"
-  get_distro_and_arch
+  get_distro_and_arch 'tools'
   if [[ $os = "linux" ]]; then
     # for linux fetch the rhel7 tarball by default
     local dist=rhel70
     # shadowing earlier $distro
     for distro in $distros; do
-      if good "https://fastdl.mongodb.org/tools/db/mongodb-database-tools-$distro-$arch-$version.tgz"; then
+      if good "https://fastdl.mongodb.org/tools/db/mongodb-database-tools-$distro-$arch-$version.$ext"; then
         dist=$distro
         break
       fi
     done
-  fi
-  if [[ $os = "osx" ]]; then
+  elif [[ $os = "osx" ]]; then
     dist="macos"
     if vergte $version "100.1.0"; then
       ext="zip"
@@ -408,7 +407,7 @@ install_tools_bin() {
   $GET https://fastdl.mongodb.org/tools/db/mongodb-database-tools-$dist-$arch-$version.$ext -o $M_DIR/tools-$version.$ext
   if test $? -gt 0; then
     printf "Error: tools installation failed\n"
-    printf "  Tarball fetch for MongoDB tools version $version failed.\n"
+    printf "  Fetch for MongoDB tools version $version failed.\n"
     printf "  Try a different version or view $logpath to view\n"
     printf "  error details.\n"
     exit 1
@@ -633,7 +632,7 @@ list_shell_versions() {
 
   for v in $versions; do
     if test "$active_shell" = "$v"; then
-      printf "   $v\n"
+      printf "  ο $v\n"
     else
       if test -d $SHELL_DIR/$v; then
         printf "  * $v\n"
@@ -707,54 +706,52 @@ display_shell_versions() {
 install_shell_bin() {
   local version=$1
 
-  log "installing binary"
+  log "installing mongosh $version"
 
   ext="tgz"
-  get_distro_and_arch
-  
+  get_distro_and_arch 'shell'
+
   if [[ $os = "linux" ]]; then
     dist="linux"
   fi
-  
+
   if [[ $os = "osx" ]]; then
-    dist="macos"
-    if vergte $version "2.0.0"; then
-      ext="zip"
-    fi
+    dist="darwin"
+    ext="zip"
   fi
 
-  printf "Downloading from https://downloads.mongodb.com/compass/mongosh-$version-$dist-$arch.$ext"
+  link="https://downloads.mongodb.com/compass/mongosh-$version-$dist-$arch.$ext"
 
-  if [[ $ext = "zip" ]]; then
-    curl -sSLf https://downloads.mongodb.com/compass/mongosh-$version-$dist-$arch.$ext -o $M_DIR/shell-$version.$ext
-  else
-    curl -sSLf https://downloads.mongodb.com/compass/mongosh-$version-$dist-$arch.$ext -o $M_DIR/shell-$version.$ext
-  fi
-  
+  log "downloading $link"
+  $GET "$link" -o $M_DIR/mongosh-$version.$ext
+
   if test $? -gt 0; then
-    printf "Error: shell installation failed\n"
-    printf "  Tarball fetch for MongoDB Shell version $version failed.\n"
-    printf "  Try a different version.\n"
+    printf "Error: mongosh installation failed\n"
+    printf "  Fetch for MongoDB Shell version $version failed.\n"
+    printf "  Try a different version or view $logpath to view\n"
+    printf "  error details.\n"
+    printf "\n"
+    printf "You might also consider installing the MongoDB shell from the MongoDB Download Center:\n"
+    printf "  https://www.mongodb.com/try/download/shell\n"
     exit 1
   fi
-  
-  mkdir -p $SHELL_DIR/$version/bin
-  
+
+  mkdir -p $SHELL_DIR/$version
+
+  log "unpacking source"
   if [[ $ext = "zip" ]]; then
-    unzip -q $M_DIR/shell-$version.zip -d $M_DIR
-    mv $M_DIR/mongosh-$version-$dist-$arch/bin/mongosh $SHELL_DIR/$version/bin/
-    mv $M_DIR/mongosh-$version-$dist-$arch/bin/mongosh_crypt_v1.* $SHELL_DIR/$version/bin/ 2>/dev/null || true
-    rm -r $M_DIR/mongosh-$version-$dist-$arch
+    unzip -q $M_DIR/mongosh-$version.zip -d $SHELL_DIR/$version
   else
-    tar -xzf $M_DIR/shell-$version.tgz -C $M_DIR
-    mv $M_DIR/mongosh-$version-$dist-$arch/bin/mongosh $SHELL_DIR/$version/bin/
-    mv $M_DIR/mongosh-$version-$dist-$arch/bin/mongosh_crypt_v1.* $SHELL_DIR/$version/bin/ 2>/dev/null || true
-    rm -r $M_DIR/mongosh-$version-$dist-$arch
+    tar -xzf $M_DIR/mongosh-$version.tgz -C $SHELL_DIR/$version
   fi
-  
-  log "removing source"
-  rm $M_DIR/shell-$version.$ext
-  log "Installation complete"
+
+
+  log "moving files"
+  mv $SHELL_DIR/$version/mongosh-$version-$dist-$arch/* $SHELL_DIR/$version
+
+  log "cleaning up"
+  rm $M_DIR/mongosh-$version.$ext
+  rm -r $SHELL_DIR/$version/mongosh-$version-$dist-$arch
 }
 
 #
@@ -777,7 +774,7 @@ install_shell() {
   if [[ $version =~ "rc" ]]; then
     local rc="--rc"
   fi
-  
+
   if [[ $version == "stable" ]]; then
     # Need to fetch versions to find the latest
     get_all_shell_versions $rc
@@ -805,10 +802,12 @@ install_shell() {
     prompt_install "MongoDB Shell version $version is not installed."
     install_shell_bin $version
   fi
-  
-  printf "\nActivating: MongoDB Server $active, MongoDB Shell $version\n"
+
+  log "activating MongoDB Shell $version"
   debug "Shell path: $dir"
   ln -fs $dir/bin/* $M_BIN_DIR
+
+  printf "Installation complete: MongoDB Shell $version activated!\n"
 }
 
 #
@@ -816,7 +815,6 @@ install_shell() {
 #
 
 install_mongo() {
-
   local version=$1; shift
   local config=$@
   local rc=""
@@ -919,29 +917,19 @@ install_mongo() {
   if vergte $version "6.0.0"; then
     if ! command -v mongosh &> /dev/null; then
       echo ""
-      echo "NOTE: the legacy mongo shell is not included in MongoDB 6.0+ distributions"
+      echo "NOTE: the mongo shell is not included in MongoDB 6.0+ distributions."
       echo ""
-      echo "Download the new MongoDB Shell (mongosh):"
+      echo "Install and use the MongoDB Shell (mongosh) separately via:"
+      echo "   m shell stable"
+      echo ""
+      echo "Or download it directly from the MongoDB website:"
       echo "   https://www.mongodb.com/try/download/shell"
       echo ""
-
-      # Convenience for macOS users
-      if [[ "$(uname)" == "Darwin" ]]; then
-        if command -v brew &> /dev/null; then
-          prompt_install "Install "mongosh" via brew?"
-          brew install mongosh --quiet
-        else
-          echo "Install via brew:"
-          echo "   brew install mongosh"
-        fi
-        echo ""
-      fi
     fi
   fi
 
 }
 
-#
 # Prompt installation
 #
 #   prompt_install "About to install something"
@@ -1006,7 +994,7 @@ install_bin() {
   fi
 
   # determine url based on os and arch
-  get_distro_and_arch
+  get_distro_and_arch 'server'
 
   # determine the download url
   if [[ "$community" == 1 ]]; then
@@ -1083,6 +1071,16 @@ install_bin() {
 #
 
 get_distro_and_arch() {
+  local type=
+  case "$1" in
+    tools|server|shell)
+      type="$1"
+      ;;
+    *)
+      abort "Invalid type: '$1' (expected: tools, server, or shell)"
+      ;;
+  esac
+
   arch=`uname -m`
   local OS=`uname`
   os=`echo $OS | tr '[:upper:]' '[:lower:]'`
@@ -1092,7 +1090,7 @@ get_distro_and_arch() {
       os=linux ;;
     darwin* )
       os=osx
-      if [ "$arch" = "arm64" ]; then
+      if [[ "$type" == "server" ]] && [ "$arch" = "arm64" ]; then
         if [ $(numeric_version $version) -lt $(numeric_version "6.0.0") ]; then
           echo ""
           echo "NOTE: Apple Silicon is not natively supported for MongoDB server before 6.0"
