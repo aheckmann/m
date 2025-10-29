@@ -156,10 +156,12 @@ display_help() {
     m tools stable               Install or activate the latest stable Database Tools release
     m tools X.Y.Z                Install or activate the Database Tools X.Y.Z
     m tools ls                   Output the versions of the Database Tools available
+    m tools rm <version ...>     Remove the given Database Tools versions
     m tools installed [--json]   Output installed versions of the Database Tools available
     m shell stable               Install or activate the latest stable MongoDB Shell release
     m shell X.Y.Z                Install or activate the MongoDB Shell X.Y.Z
     m shell ls                   Output the versions of the MongoDB Shell available
+    m shell rm <version ...>     Remove the given MongoDB Shell versions
     m shell installed [--json]   Output installed versions of the MongoDB Shell available
 
   Events:
@@ -582,6 +584,46 @@ display_tools_versions() {
   fi
 }
 
+remove_tools_versions() {
+  test -z $1 && abort "version(s) required"
+  check_current_tools_version
+
+  while test $# -ne 0; do
+    local version=${1#v}
+    local rmpath="$TOOLS_DIR/$version"
+    debug "=> Path: $rmpath"
+
+    if verlte $version "4.3.2"; then
+      printf "Error: Cannot remove tools version $version since it is included with the\n"
+      printf "MongoDB server package. To remove this version, remove the server instead:\n"
+      printf "   m rm $version\n"
+      shift
+      continue
+    fi
+
+    if test "$version" = "$active_tools"; then
+      printf "WARNING: $version is the active version!\n"
+      if [[ "$CONFIRM" == 1 ]]; then
+        read -p "Are you sure you want to remove this? [y/N] " yn
+        case $yn in
+          [Yy]* ) ;;
+          * )  printf "SKIPPING $version "; exit;;
+        esac
+      fi
+    fi
+
+    if [ -d $rmpath ]; then
+      rm -rf $rmpath
+      echo "Removed MongoDB tools version $version"
+      active_tools=""
+    else
+      echo "MongoDB tools version $version is not installed"
+    fi
+
+    shift
+  done
+}
+
 #
 # Find the current installed version of shell.
 #
@@ -695,6 +737,37 @@ display_shell_versions() {
   if $json; then
     printf "\n]\n"
   fi
+}
+
+remove_shell_versions() {
+  test -z $1 && abort "version(s) required"
+  check_current_shell_version
+
+  while test $# -ne 0; do
+    local version=${1#v}
+    local rmpath="$SHELL_DIR/$version"
+    debug "=> Path: $rmpath"
+    if test "$version" = "$active_shell"; then
+      printf "WARNING: $version is the active version!\n"
+      if [[ "$CONFIRM" == 1 ]]; then
+        read -p "Are you sure you want to remove this? [y/N] " yn
+        case $yn in
+          [Yy]* ) ;;
+          * )  printf "SKIPPING $version "; exit;;
+        esac
+      fi
+    fi
+
+    if [ -d $rmpath ]; then
+      rm -rf $rmpath
+      echo "Removed MongoDB shell version $version"
+      active_shell=""
+    else
+      echo "MongoDB shell version $version is not installed"
+    fi
+
+    shift
+  done
 }
 
 #
@@ -1773,6 +1846,7 @@ handle_tools() {
         ls|list|available|avail) list_tools_versions $@; exit;;
         lls|installed) display_tools_versions $2; exit ;;
         stable) install_tools $@; exit ;;
+        rm) shift; remove_tools_versions $@; exit ;;
         *) install_tools $@; exit ;;
       esac
   fi
@@ -1788,6 +1862,7 @@ handle_shell() {
         ls|list|available|avail) list_shell_versions $@; exit;;
         lls|installed) display_shell_versions $2; exit ;;
         stable) install_shell $@; exit ;;
+        rm) shift; remove_shell_versions $@; exit ;;
         *) install_shell $@; exit ;;
       esac
   fi
