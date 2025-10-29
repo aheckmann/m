@@ -1766,23 +1766,31 @@ list_posts() {
 # Handle tools commands
 
 handle_tools() {
-  case $1 in
-      ls|list|available|avail) list_tools_versions $@; exit;;
-      lls|installed) display_tools_versions $2; exit ;;
-      stable) install_tools $@; exit ;;
-      *) install_tools $@; exit ;;
-    esac
+  if test $# -eq 0; then
+    display_tools_versions
+  else
+    case $1 in
+        ls|list|available|avail) list_tools_versions $@; exit;;
+        lls|installed) display_tools_versions $2; exit ;;
+        stable) install_tools $@; exit ;;
+        *) install_tools $@; exit ;;
+      esac
+  fi
 }
 
 # Handle shell commands
 
 handle_shell() {
-  case $1 in
-      ls|list|available|avail) list_shell_versions $@; exit;;
-      lls|installed) display_shell_versions $2; exit ;;
-      stable) install_shell $@; exit ;;
-      *) install_shell $@; exit ;;
-    esac
+  if test $# -eq 0; then
+    display_shell_versions
+  else
+    case $1 in
+        ls|list|available|avail) list_shell_versions $@; exit;;
+        lls|installed) display_shell_versions $2; exit ;;
+        stable) install_shell $@; exit ;;
+        *) install_shell $@; exit ;;
+      esac
+  fi
 }
 
 # Handle arguments
