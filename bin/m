@@ -84,6 +84,14 @@ abort_not_installed() {
   exit 1
 }
 
+abort_shell_not_installed() {
+  printf "Error: The requested MongoDB shell version is not installed.\n"
+  if [[ ! -z "$version" ]]; then
+    printf "Try 'm mongosh $version' to download and activate.\n"
+  fi
+  exit 1
+}
+
 #
 # Check file age (in seconds)
 #
@@ -136,7 +144,7 @@ display_help() {
     m <version> --legacy         Install generic Linux version (does not include SSL)
     m use <version> [args ...]   Execute mongod <version> with [args ...]
     m shard <version> [args ...] Execute mongos <version> with [args ...]
-    m s <version> [args ...]     Open a mongo shell <version> with [args ...]
+    m shell <version> [args ...] Open a mongo shell <version> with [args ...]
     m bin <version>              Output bin path for <version>
     m rm <version ...>           Remove the given version(s)
     m --stable                   Output the latest stable MongoDB version available
@@ -157,17 +165,17 @@ display_help() {
     m tools X.Y.Z                Install or activate the Database Tools X.Y.Z
     m tools ls                   Output the versions of the Database Tools available
     m tools rm <version ...>     Remove the given Database Tools versions
-    m tools installed [--json]   Output installed versions of the Database Tools available
-    m shell stable               Install or activate the latest stable MongoDB Shell release
-    m shell X.Y.Z                Install or activate the MongoDB Shell X.Y.Z
-    m shell ls                   Output the versions of the MongoDB Shell available
-    m shell rm <version ...>     Remove the given MongoDB Shell versions
-    m shell installed [--json]   Output installed versions of the MongoDB Shell available
+    m tools installed [--json]   Output the installed versions of the Database Tools
+    m mongosh stable             Install or activate the latest stable MongoDB Shell release
+    m mongosh X.Y.Z              Install or activate the MongoDB Shell X.Y.Z
+    m mongosh ls                 Output the versions of the MongoDB Shell available
+    m mongosh rm <version ...>   Remove the given MongoDB Shell versions
+    m mongosh installed [--json] Output the installed versions of the MongoDB Shell
 
   Events:
 
-    change   Occurs when switching MongoDB versions
-    install  Occurs when installing a previously uninstalled MongoDB version
+    change   Occurs when switching MongoDB server versions
+    install  Occurs when installing a previously uninstalled MongoDB server version
 
   Options:
 
@@ -178,7 +186,7 @@ display_help() {
 
     installed  lls
     shard      sd, mongos
-    mongo      s, sh
+    shell      s, sh, mongo
     list       ls, available, avail
     use        as, mongod
     which      bin
@@ -1554,15 +1562,24 @@ execute_shard_with_version() {
 
 execute_shell_with_version() {
   test -z $1 && abort "version required"
-  local version=$(get_latest_installed_version ${1#v})
-  local bin=$VERSIONS_DIR/$version/bin/mongo
+
+  # first see if this version of mongosh is installed. fallback to legacy.
+  local bin=$SHELL_DIR/${1#v}/bin/mongosh
+
+  if ! test -f $bin; then
+    log "mongosh version ${1#v} not found, falling back to legacy mongo shell"
+    local version=$(get_latest_installed_version ${1#v})
+    local bin=$VERSIONS_DIR/$version/bin/mongo
+  fi
+
+  debug "Shell bin: $bin"
 
   shift # remove version
 
   if test -f $bin; then
     $bin $@
   else
-    abort_not_installed $version
+    abort_shell_not_installed ${1#v}
   fi
 }
 
@@ -1852,9 +1869,9 @@ handle_tools() {
   fi
 }
 
-# Handle shell commands
+# Handle mongosh commands
 
-handle_shell() {
+handle_mongosh() {
   if test $# -eq 0; then
     display_shell_versions
   else
@@ -1883,7 +1900,7 @@ else
       bin|which) display_bin_path_for_version $2; exit ;;
       as|use|mongod) shift; execute_with_version $@; exit ;;
       sd|shard|mongos) shift; execute_shard_with_version $@; exit ;;
-      s|sh|mongo) shift; execute_shell_with_version $@; exit ;;
+      s|sh|shell|mongo) shift; execute_shell_with_version $@; exit ;;
       rm) shift; remove_versions $@; exit ;;
       latest) install_mongo `$0 --latest`; exit ;;
       stable) install_mongo `$0 --stable`; exit ;;
@@ -1894,7 +1911,7 @@ else
       install) shift; install_mongo $@; exit ;;
       reinstall) shift; CONFIRM=0; remove_versions $@; install_mongo $@; exit;;
       tools) shift; handle_tools $@; exit;;
-      shell) shift; handle_shell $@; exit;;
+      mongosh) shift; handle_mongosh $@; exit;;
       *) install_mongo $@; exit ;;
     esac
     shift
