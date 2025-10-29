@@ -279,7 +279,7 @@ display_versions() {
       fi
     else
       if [ "$version" = "$active" ]; then
-        printf "  * $version $config\n"
+        printf "  ✔ $version $config\n"
       else
         printf "    $version $config\n"
       fi
@@ -488,7 +488,7 @@ list_tools_versions() {
 
   for v in $versions; do
     if test "$active_tools" = "$v"; then
-      printf "   $v\n"
+      printf "  ✔ $v\n"
     else
       if test -d $VERSIONS_DIR/$v || test -d $TOOLS_DIR/$v; then
         printf "  * $v\n"
@@ -570,7 +570,7 @@ display_tools_versions() {
       fi
     else
       if [ "$version" = "$active_tools" ]; then
-        printf "   $version $config\n"
+        printf "  ✔ $version $config\n"
       else
         printf "    $version $config\n"
       fi
@@ -632,7 +632,7 @@ list_shell_versions() {
 
   for v in $versions; do
     if test "$active_shell" = "$v"; then
-      printf "  ο $v\n"
+      printf "  ✔ $v\n"
     else
       if test -d $SHELL_DIR/$v; then
         printf "  * $v\n"
@@ -685,7 +685,7 @@ display_shell_versions() {
       fi
     else
       if [ "$version" = "$active_shell" ]; then
-        printf "  * $version $config\n"
+        printf "  ✔ $version $config\n"
       else
         printf "    $version $config\n"
       fi
@@ -1609,7 +1609,7 @@ list_versions() {
 
   for v in $versions; do
     if test "$active" = "$v"; then
-      printf "  ο $v\n"
+      printf "  ✔ $v\n"
     else
       if test -d $VERSIONS_DIR/$v; then
         printf "  * $v\n"
