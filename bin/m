@@ -801,6 +801,12 @@ install_shell_bin() {
     ext="zip"
   fi
 
+  if [[ $arch = "x86_64" ]]; then
+    # For mongosh, use x64 naming, following this doc:
+    # https://s3.amazonaws.com/info-mongodb-com/com-download-center/mongosh.multiversion.json
+    arch="x64"
+  fi
+
   link="https://downloads.mongodb.com/compass/mongosh-$version-$dist-$arch.$ext"
 
   log "downloading $link"
