@@ -20,6 +20,9 @@ VERSIONS_DIR=$M_DIR/versions
 # Directory for MongoDB Tools version binaries
 TOOLS_DIR=$M_DIR/tools/versions
 
+# Directory for MongoDB Shell version binaries
+SHELL_DIR=$M_DIR/shell/versions
+
 # Working directory for unpacking MongoDB tarballs
 BUILD_DIR_BASE=$M_DIR/mongo-
 
@@ -77,6 +80,14 @@ abort_not_installed() {
   printf "Error: requested MongoDB version is not installed\n"
   if [[ ! -z "$version" ]]; then
     printf "Try 'm $version' to download and activate.\n"
+  fi
+  exit 1
+}
+
+abort_shell_not_installed() {
+  printf "Error: The requested MongoDB shell version is not installed.\n"
+  if [[ ! -z "$version" ]]; then
+    printf "Try 'm mongosh $version' to download and activate.\n"
   fi
   exit 1
 }
@@ -153,12 +164,18 @@ display_help() {
     m tools stable               Install or activate the latest stable Database Tools release
     m tools X.Y.Z                Install or activate the Database Tools X.Y.Z
     m tools ls                   Output the versions of the Database Tools available
-    m tools installed [--json]   Output installed versions of the Database Tools available
+    m tools rm <version ...>     Remove the given Database Tools versions
+    m tools installed [--json]   Output the installed versions of the Database Tools
+    m mongosh stable             Install or activate the latest stable MongoDB Shell release
+    m mongosh X.Y.Z              Install or activate the MongoDB Shell X.Y.Z
+    m mongosh ls                 Output the versions of the MongoDB Shell available
+    m mongosh rm <version ...>   Remove the given MongoDB Shell versions
+    m mongosh installed [--json] Output the installed versions of the MongoDB Shell
 
   Events:
 
-    change   Occurs when switching MongoDB versions
-    install  Occurs when installing a previously uninstalled MongoDB version
+    change   Occurs when switching MongoDB server versions
+    install  Occurs when installing a previously uninstalled MongoDB server version
 
   Options:
 
@@ -272,7 +289,7 @@ display_versions() {
       fi
     else
       if [ "$version" = "$active" ]; then
-        printf "  * $version $config\n"
+        printf "  ✔ $version $config\n"
       else
         printf "    $version $config\n"
       fi
@@ -367,19 +384,18 @@ install_tools_bin() {
   log "installing binary"
 
   ext="tgz"
-  get_distro_and_arch
+  get_distro_and_arch 'tools'
   if [[ $os = "linux" ]]; then
     # for linux fetch the rhel7 tarball by default
     local dist=rhel70
     # shadowing earlier $distro
     for distro in $distros; do
-      if good "https://fastdl.mongodb.org/tools/db/mongodb-database-tools-$distro-$arch-$version.tgz"; then
+      if good "https://fastdl.mongodb.org/tools/db/mongodb-database-tools-$distro-$arch-$version.$ext"; then
         dist=$distro
         break
       fi
     done
-  fi
-  if [[ $os = "osx" ]]; then
+  elif [[ $os = "osx" ]]; then
     dist="macos"
     if vergte $version "100.1.0"; then
       ext="zip"
@@ -401,7 +417,7 @@ install_tools_bin() {
   $GET https://fastdl.mongodb.org/tools/db/mongodb-database-tools-$dist-$arch-$version.$ext -o $M_DIR/tools-$version.$ext
   if test $? -gt 0; then
     printf "Error: tools installation failed\n"
-    printf "  Tarball fetch for MongoDB tools version $version failed.\n"
+    printf "  Fetch for MongoDB tools version $version failed.\n"
     printf "  Try a different version or view $logpath to view\n"
     printf "  error details.\n"
     exit 1
@@ -482,7 +498,7 @@ list_tools_versions() {
 
   for v in $versions; do
     if test "$active_tools" = "$v"; then
-      printf "   $v\n"
+      printf "  ✔ $v\n"
     else
       if test -d $VERSIONS_DIR/$v || test -d $TOOLS_DIR/$v; then
         printf "  * $v\n"
@@ -564,7 +580,7 @@ display_tools_versions() {
       fi
     else
       if [ "$version" = "$active_tools" ]; then
-        printf "   $version $config\n"
+        printf "  ✔ $version $config\n"
       else
         printf "    $version $config\n"
       fi
@@ -576,12 +592,316 @@ display_tools_versions() {
   fi
 }
 
+remove_tools_versions() {
+  test -z $1 && abort "version(s) required"
+  check_current_tools_version
+
+  while test $# -ne 0; do
+    local version=${1#v}
+    local rmpath="$TOOLS_DIR/$version"
+    debug "=> Path: $rmpath"
+
+    if verlte $version "4.3.2"; then
+      printf "Error: Cannot remove tools version $version since it is included with the\n"
+      printf "MongoDB server package. To remove this version, remove the server instead:\n"
+      printf "   m rm $version\n"
+      shift
+      continue
+    fi
+
+    if test "$version" = "$active_tools"; then
+      printf "WARNING: $version is the active version!\n"
+      if [[ "$CONFIRM" == 1 ]]; then
+        read -p "Are you sure you want to remove this? [y/N] " yn
+        case $yn in
+          [Yy]* ) ;;
+          * )  printf "SKIPPING $version "; exit;;
+        esac
+      fi
+    fi
+
+    if [ -d $rmpath ]; then
+      rm -rf $rmpath
+      echo "Removed MongoDB tools version $version"
+      active_tools=""
+    else
+      echo "MongoDB tools version $version is not installed"
+    fi
+
+    shift
+  done
+}
+
+#
+# Find the current installed version of shell.
+#
+
+check_current_shell_version() {
+  which $M_BIN_DIR/mongosh &> /dev/null
+  if test $? -eq 0; then
+    active_shell=`$M_BIN_DIR/mongosh --version | sed -nE "s/^([0-9]+\.[0-9]+\.[0-9]+)$/\1/p" | head -1`
+  fi
+}
+
+#
+# Find all available versions of the MongoDB Shell.
+#
+
+get_all_shell_versions() {
+  local rc_regex=""
+  if [[ $1 == "--rc" ]]; then
+    rc_regex="(-rc[0-9]+)?"
+  fi
+
+  curl_shell_versions=(curl -sSf -H "Accept: application/vnd.github.v3+json")
+  if [ -n "${GH_TOKEN:-}" ]; then
+    debug "Using GitHub token from environment for API requests"
+    curl_shell_versions+=(-H "authorization: bearer ${GH_TOKEN:?}")
+  fi
+  curl_shell_versions+=("https://api.github.com/repos/mongodb-js/mongosh/git/refs/tags")
+
+  shell_versions="$("${curl_shell_versions[@]}" \
+  | sed -nE "s/^.*\"ref\"\: \"refs\/tags\/v([[:digit:]]+\.[[:digit:]]+\.[[:digit:]]+$rc_regex)\",$/\1/p" \
+  | sort -V)"
+
+  versions="$shell_versions"
+}
+
+#
+# Output all MongoDB Shell versions
+#
+
+list_shell_versions() {
+  check_current_shell_version
+
+  if [[ $2 == "--rc" ]]; then
+    local rc="--rc"
+  fi
+
+  get_all_shell_versions $rc
+
+  for v in $versions; do
+    if test "$active_shell" = "$v"; then
+      printf "  ✔ $v\n"
+    else
+      if test -d $SHELL_DIR/$v; then
+        printf "  * $v\n"
+      else
+        printf "    $v\n"
+      fi
+    fi
+  done
+}
+
+#
+# Output all installed shell versions.
+# Pass "--json" to output in JSON format.
+#
+
+display_shell_versions() {
+  local option=$1; shift
+  local json=false
+  if test "$option" = "--json"; then
+    json=true
+  fi
+
+  declare -a versions
+  if [ -e $SHELL_DIR ]; then
+    versions=(`ls -1 $SHELL_DIR | sort -t. -k 1,1n -k 2,2n -k 3,3n`)
+  fi
+
+  if test -z "$versions"; then
+    if $json; then
+      echo "[]"
+    else
+      echo "No installed versions"
+    fi
+    return
+  fi
+  local last=${versions[${#versions[@]}-1]}
+
+  if $json; then
+    printf "["
+  fi
+
+  check_current_shell_version
+  for version in ${versions[@]}; do
+    local dir="$SHELL_DIR/$version"
+    local config=`test -f "$dir"/.config && cat "$dir"/.config`
+    if $json; then
+      printf "\n  {\n    \"name\" : \"$version\",\n    \"path\" : \"$dir/bin/\" \n  }"
+      if [ "$version" != "$last" ]; then
+        printf ","
+      fi
+    else
+      if [ "$version" = "$active_shell" ]; then
+        printf "  ✔ $version $config\n"
+      else
+        printf "    $version $config\n"
+      fi
+    fi
+  done
+
+  if $json; then
+    printf "\n]\n"
+  fi
+}
+
+remove_shell_versions() {
+  test -z $1 && abort "version(s) required"
+  check_current_shell_version
+
+  while test $# -ne 0; do
+    local version=${1#v}
+    local rmpath="$SHELL_DIR/$version"
+    debug "=> Path: $rmpath"
+    if test "$version" = "$active_shell"; then
+      printf "WARNING: $version is the active version!\n"
+      if [[ "$CONFIRM" == 1 ]]; then
+        read -p "Are you sure you want to remove this? [y/N] " yn
+        case $yn in
+          [Yy]* ) ;;
+          * )  printf "SKIPPING $version "; exit;;
+        esac
+      fi
+    fi
+
+    if [ -d $rmpath ]; then
+      rm -rf $rmpath
+      echo "Removed MongoDB shell version $version"
+      active_shell=""
+    else
+      echo "MongoDB shell version $version is not installed"
+    fi
+
+    shift
+  done
+}
+
+#
+# Install MongoDB Shell binaries for provided version
+#
+#   install_shell_bin <version>
+#
+
+install_shell_bin() {
+  local version=$1
+
+  log "installing mongosh $version"
+
+  ext="tgz"
+  get_distro_and_arch 'shell'
+
+  if [[ $os = "linux" ]]; then
+    dist="linux"
+  fi
+
+  if [[ $os = "osx" ]]; then
+    dist="darwin"
+    ext="zip"
+  fi
+
+  if [[ $arch = "x86_64" ]]; then
+    # For mongosh, use x64 naming, following this doc:
+    # https://s3.amazonaws.com/info-mongodb-com/com-download-center/mongosh.multiversion.json
+    arch="x64"
+  fi
+
+  link="https://downloads.mongodb.com/compass/mongosh-$version-$dist-$arch.$ext"
+
+  log "downloading $link"
+  $GET "$link" -o $M_DIR/mongosh-$version.$ext
+
+  if test $? -gt 0; then
+    printf "Error: mongosh installation failed\n"
+    printf "  Fetch for MongoDB Shell version $version failed.\n"
+    printf "  Try a different version or view $logpath to view\n"
+    printf "  error details.\n"
+    printf "\n"
+    printf "You might also consider installing the MongoDB shell from the MongoDB Download Center:\n"
+    printf "  https://www.mongodb.com/try/download/shell\n"
+    exit 1
+  fi
+
+  mkdir -p $SHELL_DIR/$version
+
+  log "unpacking source"
+  if [[ $ext = "zip" ]]; then
+    unzip -q $M_DIR/mongosh-$version.zip -d $SHELL_DIR/$version
+  else
+    tar -xzf $M_DIR/mongosh-$version.tgz -C $SHELL_DIR/$version
+  fi
+
+
+  log "moving files"
+  mv $SHELL_DIR/$version/mongosh-$version-$dist-$arch/* $SHELL_DIR/$version
+
+  log "cleaning up"
+  rm $M_DIR/mongosh-$version.$ext
+  rm -r $SHELL_DIR/$version/mongosh-$version-$dist-$arch
+}
+
+#
+# Install and activate MongoDB Shell.
+#
+#   install_shell <version>
+#
+
+install_shell() {
+  local version=$1
+
+  check_current_shell_version
+  check_current_version
+
+  if [[ $version == $active_shell ]]; then
+    printf "Already Active: MongoDB Server $active, MongoDB Shell $active_shell\n"
+    exit 0
+  fi
+
+  if [[ $version =~ "rc" ]]; then
+    local rc="--rc"
+  fi
+
+  if [[ $version == "stable" ]]; then
+    # Need to fetch versions to find the latest
+    get_all_shell_versions $rc
+    if [[ -z "$versions" ]]; then
+      printf "Could not fetch available versions of MongoDB Shell\n"
+      exit 1
+    fi
+    # Set version to the latest available version
+    version=`echo $versions | awk 'NF>1{print $NF}'`
+  elif [[ $version =~ ^[0-9]+\.[0-9]+\.[0-9]+$ ]]; then
+    # Specific version provided, try to install it directly
+    # (only validate if we successfully fetched versions)
+    get_all_shell_versions $rc
+    if [[ ! -z "$versions" ]] && [[ ! $versions =~ $version ]]; then
+      printf "Could not find any releases for the requested version "$version" of MongoDB Shell\n"
+      exit 1
+    fi
+  else
+    printf "Invalid version format: $version\n"
+    exit 1
+  fi
+
+  local dir=$SHELL_DIR/$version
+  if test ! -d $dir; then
+    prompt_install "MongoDB Shell version $version is not installed."
+    install_shell_bin $version
+  fi
+
+  log "activating MongoDB Shell $version"
+  debug "Shell path: $dir"
+  ln -fs $dir/bin/* $M_BIN_DIR
+
+  printf "Installation complete: MongoDB Shell $version activated!\n"
+}
+
 #
 # Install MongoDB <version> [config ...]
 #
 
 install_mongo() {
-
   local version=$1; shift
   local config=$@
   local rc=""
@@ -684,29 +1004,19 @@ install_mongo() {
   if vergte $version "6.0.0"; then
     if ! command -v mongosh &> /dev/null; then
       echo ""
-      echo "NOTE: the legacy mongo shell is not included in MongoDB 6.0+ distributions"
+      echo "NOTE: the mongo shell is not included in MongoDB 6.0+ distributions."
       echo ""
-      echo "Download the new MongoDB Shell (mongosh):"
+      echo "Install and use the MongoDB Shell (mongosh) separately via:"
+      echo "   m shell stable"
+      echo ""
+      echo "Or download it directly from the MongoDB website:"
       echo "   https://www.mongodb.com/try/download/shell"
       echo ""
-
-      # Convenience for macOS users
-      if [[ "$(uname)" == "Darwin" ]]; then
-        if command -v brew &> /dev/null; then
-          prompt_install "Install "mongosh" via brew?"
-          brew install mongosh --quiet
-        else
-          echo "Install via brew:"
-          echo "   brew install mongosh"
-        fi
-        echo ""
-      fi
     fi
   fi
 
 }
 
-#
 # Prompt installation
 #
 #   prompt_install "About to install something"
@@ -771,7 +1081,7 @@ install_bin() {
   fi
 
   # determine url based on os and arch
-  get_distro_and_arch
+  get_distro_and_arch 'server'
 
   # determine the download url
   if [[ "$community" == 1 ]]; then
@@ -848,6 +1158,16 @@ install_bin() {
 #
 
 get_distro_and_arch() {
+  local type=
+  case "$1" in
+    tools|server|shell)
+      type="$1"
+      ;;
+    *)
+      abort "Invalid type: '$1' (expected: tools, server, or shell)"
+      ;;
+  esac
+
   arch=`uname -m`
   local OS=`uname`
   os=`echo $OS | tr '[:upper:]' '[:lower:]'`
@@ -857,7 +1177,7 @@ get_distro_and_arch() {
       os=linux ;;
     darwin* )
       os=osx
-      if [ "$arch" = "arm64" ]; then
+      if [[ "$type" == "server" ]] && [ "$arch" = "arm64" ]; then
         if [ $(numeric_version $version) -lt $(numeric_version "6.0.0") ]; then
           echo ""
           echo "NOTE: Apple Silicon is not natively supported for MongoDB server before 6.0"
@@ -1248,15 +1568,24 @@ execute_shard_with_version() {
 
 execute_shell_with_version() {
   test -z $1 && abort "version required"
-  local version=$(get_latest_installed_version ${1#v})
-  local bin=$VERSIONS_DIR/$version/bin/mongo
+
+  # first see if this version of mongosh is installed. fallback to legacy.
+  local bin=$SHELL_DIR/${1#v}/bin/mongosh
+
+  if ! test -f $bin; then
+    log "mongosh version ${1#v} not found, falling back to legacy mongo shell"
+    local version=$(get_latest_installed_version ${1#v})
+    local bin=$VERSIONS_DIR/$version/bin/mongo
+  fi
+
+  debug "Shell bin: $bin"
 
   shift # remove version
 
   if test -f $bin; then
     $bin $@
   else
-    abort_not_installed $version
+    abort_shell_not_installed ${1#v}
   fi
 }
 
@@ -1376,7 +1705,7 @@ list_versions() {
 
   for v in $versions; do
     if test "$active" = "$v"; then
-      printf "  ο $v\n"
+      printf "  ✔ $v\n"
     else
       if test -d $VERSIONS_DIR/$v; then
         printf "  * $v\n"
@@ -1533,12 +1862,33 @@ list_posts() {
 # Handle tools commands
 
 handle_tools() {
-  case $1 in
-      ls|list|available|avail) list_tools_versions $@; exit;;
-      lls|installed) display_tools_versions $2; exit ;;
-      stable) install_tools $@; exit ;;
-      *) install_tools $@; exit ;;
-    esac
+  if test $# -eq 0; then
+    display_tools_versions
+  else
+    case $1 in
+        ls|list|available|avail) list_tools_versions $@; exit;;
+        lls|installed) display_tools_versions $2; exit ;;
+        stable) install_tools $@; exit ;;
+        rm) shift; remove_tools_versions $@; exit ;;
+        *) install_tools $@; exit ;;
+      esac
+  fi
+}
+
+# Handle mongosh commands
+
+handle_mongosh() {
+  if test $# -eq 0; then
+    display_shell_versions
+  else
+    case $1 in
+        ls|list|available|avail) list_shell_versions $@; exit;;
+        lls|installed) display_shell_versions $2; exit ;;
+        stable) install_shell $@; exit ;;
+        rm) shift; remove_shell_versions $@; exit ;;
+        *) install_shell $@; exit ;;
+      esac
+  fi
 }
 
 # Handle arguments
@@ -1567,6 +1917,7 @@ else
       install) shift; install_mongo $@; exit ;;
       reinstall) shift; CONFIRM=0; remove_versions $@; install_mongo $@; exit;;
       tools) shift; handle_tools $@; exit;;
+      mongosh) shift; handle_mongosh $@; exit;;
       *) install_mongo $@; exit ;;
     esac
     shift

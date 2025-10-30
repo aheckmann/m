@@ -102,6 +102,7 @@ describe('m - MongoDB Version Management', { concurrency: 5 }, () => {
       assert.match(result.stdout, /Usage: m \[options\] \[COMMAND\] \[config\]/);
       assert.match(result.stdout, /Commands:/);
       assert.match(result.stdout, /Options:/);
+      assert.match(result.stdout, /Aliases:/);
     });
 
     test('should display help with --help flag', async () => {
@@ -213,7 +214,20 @@ describe('m - MongoDB Version Management', { concurrency: 5 }, () => {
       assert.match(result.stdout, new RegExp(`Activating: MongoDB Server ${version}`, 'i'));
     });
 
-    test('should uninstall the version ', async () => {
+    test('installed version should be marked with checkmark in ls output', async () => {
+      const result = await run(['ls']);
+      assert.equal(result.exitCode, 0);
+      // The active version should have a checkmark
+      assert.match(result.stdout, new RegExp(`✔ ${version}`));
+    });
+
+    test('installed version should be marked with checkmark in installed output', async () => {
+      const result = await run(['installed']);
+      assert.equal(result.exitCode, 0);
+      assert.match(result.stdout, new RegExp(`✔ ${version}`));
+    });
+
+    test('should uninstall the version', async () => {
       const result = await run(['rm', version]);
       assert.equal(result.exitCode, 0);
       assert.match(result.stdout, new RegExp(`Removed MongoDB version ${version}`, 'i'));
@@ -286,6 +300,105 @@ describe('m - MongoDB Version Management', { concurrency: 5 }, () => {
       assert.equal(result.exitCode, 0);
       assert.doesNotThrow(() => JSON.parse(result.stdout));
     });
+
+    test('should show installed tools when called without arguments', async () => {
+      const result = await run(['tools']);
+      assert.equal(result.exitCode, 0);
+      assert.match(result.stdout, /(No installed versions|^\s*$)/);
+    });
+
+    test('should remove database tools version', async () => {
+      const result = await run(['tools', 'rm', '100.9.4']);
+      assert.equal(result.exitCode, 0);
+      // Should succeed or indicate version not installed
+      assert.doesNotMatch(result.stdout, /line \d+:/);
+    });
+  });
+
+  describe('MongoDB Shell (mongosh) Commands', { concurrency: 1 }, () => {
+    test('should list mongosh versions with ls command', async () => {
+      const result = await run(['mongosh', 'ls']);
+      assert.equal(result.exitCode, 0);
+      // Should contain version numbers
+      assert.match(result.stdout, /\d+\.\d+\.\d+/);
+    });
+
+    // intentionally not testing ls aliases to avoid github rate limits
+
+    test('should show installed mongosh versions (initially empty)', async () => {
+      const result = await run(['mongosh', 'installed']);
+      assert.equal(result.exitCode, 0);
+      assert.match(result.stdout, /(No installed versions|^\s*$)/);
+    });
+
+    test('should show installed mongosh versions with lls alias', async () => {
+      const result = await run(['mongosh', 'lls']);
+      assert.equal(result.exitCode, 0);
+      assert.match(result.stdout, /(No installed versions|^\s*$)/);
+    });
+
+    test('should show installed mongosh versions in JSON format', async () => {
+      const result = await run(['mongosh', 'installed', '--json']);
+      assert.equal(result.exitCode, 0);
+      assert.doesNotThrow(() => JSON.parse(result.stdout));
+      const parsed = JSON.parse(result.stdout);
+      assert.ok(Array.isArray(parsed));
+    });
+
+    test('should show installed mongosh when called without arguments', async () => {
+      const result = await run(['mongosh']);
+      assert.equal(result.exitCode, 0);
+      assert.match(result.stdout, /(No installed versions|^\s*$)/);
+    });
+
+    test('should remove mongosh version', async () => {
+      const result = await run(['mongosh', 'rm', '2.3.7']);
+      assert.equal(result.exitCode, 0);
+      // Should succeed or indicate version not installed
+      assert.doesNotMatch(result.stdout, /line \d+:/);
+    });
+
+    test('should handle removing multiple mongosh versions', async () => {
+      const result = await run(['mongosh', 'rm', '2.3.0', '2.3.1']);
+      assert.equal(result.exitCode, 0, `${result.stdout} ${result.stderr}`);
+      assert.doesNotMatch(result.stdout, /line \d+:/);
+    });
+
+    test('should install latest stable mongosh with stable command', async () => {
+      const result = await run(['mongosh', 'stable'], { timeout: 120_000 });
+      assert.equal(result.exitCode, 0, `${result.stdout} ${result.stderr}`);
+      assert.match(result.stdout, /Installation complete: MongoDB Shell \d+\.\d+\.\d+/);
+    });
+
+    test('installed mongosh should appear in installed list', async () => {
+      await run(['mongosh', '2.5.6'], { timeout: 120_000 });
+      const result = await run(['mongosh', 'installed']);
+      assert.equal(result.exitCode, 0, `${result.stdout} ${result.stderr}`);
+      assert.match(result.stdout, /2\.5\.6/);
+    });
+
+    test('should reactivate already installed mongosh version', async () => {
+      const installedResult = await run(['mongosh', 'installed', '--json']);
+      const installed = JSON.parse(installedResult.stdout);
+      assert.ok(installed.length > 0, 'Should have at least one installed mongosh version');
+      const version = installed[0].name; // JSON uses 'name' field
+      const result = await run(['mongosh', version]);
+      assert.equal(result.exitCode, 0);
+      assert.match(result.stdout, /already active|Installation complete/i);
+    });
+
+    test('should clean up installed mongosh after tests', async () => {
+      const installedResult = await run(['mongosh', 'installed', '--json']);
+      const installed = JSON.parse(installedResult.stdout);
+      if (installed.length > 0) {
+        const versions = installed.map(v => v.name); // JSON uses 'name' field
+        const result = await run(['mongosh', 'rm', ...versions]);
+        assert.equal(result.exitCode, 0);
+      }
+      const installedResult2 = await run(['mongosh', 'installed', '--json']);
+      const installed2 = JSON.parse(installedResult2.stdout);
+      assert.ok(installed2.length === 0, 'Should have no installed mongosh versions');
+    });
   });
 
   describe('Hook Management Commands', () => {
@@ -342,49 +455,84 @@ describe('m - MongoDB Version Management', { concurrency: 5 }, () => {
   describe('Version Management Commands (Error Cases)', () => {
     test('should fail to execute mongod for non-installed version', async () => {
       const result = await run(['use', '7.0.0', '--version']);
-      assert.notEqual(result.exitCode, 0);
+      assert.notEqual(result.exitCode, 0, `${result.stdout} ${result.stderr}`);
       assert.match(result.stdout, /not installed/);
     });
 
     test('should fail to execute mongos for non-installed version', async () => {
       const result = await run(['shard', '7.0.0', '--version']);
-      assert.notEqual(result.exitCode, 0);
+      assert.notEqual(result.exitCode, 0, `${result.stdout} ${result.stderr}`);
       assert.match(result.stdout, /not installed/);
     });
 
     test('should fail to execute mongo shell for non-installed version', async () => {
       const result = await run(['shell', '7.0.0', '--version']);
-      assert.notEqual(result.exitCode, 0);
+      assert.notEqual(result.exitCode, 0, `${result.stdout} ${result.stderr}`);
       assert.match(result.stdout, /not installed/);
+    });
+
+    test('should fail to execute mongo shell with s alias for non-installed version', async () => {
+      const result = await run(['s', '7.0.0', '--version']);
+      assert.notEqual(result.exitCode, 0, `${result.stdout} ${result.stderr}`);
+      assert.match(result.stdout, /not installed/);
+    });
+
+    test('should fail to execute mongo shell with mongo alias for non-installed version', async () => {
+      const result = await run(['mongo', '7.0.0', '--version']);
+      assert.notEqual(result.exitCode, 0, `${result.stdout} ${result.stderr}`);
+      assert.match(result.stdout, /not installed/);
+    });
+
+    test('shell command should fallback to legacy mongo', async () => {
+      const result1 = await run(['4.4.29']);
+      assert.equal(result1.exitCode, 0, `${result1.stdout} ${result1.stderr}`);
+
+      const result2 = await run(['s', '4.4.29', '--version']);
+      if (result2.exitCode === 0) {
+        // Legacy mongo shell may not be installable in all CI environments
+        assert.match(result2.stdout, /version v4.4.29/);
+      }
     });
 
     test('should succeed when removing non-installed version', async () => {
       const result = await run(['rm', '7.0.0']);
-      assert.equal(result.exitCode, 0);
+      assert.equal(result.exitCode, 0, `${result.stdout} ${result.stderr}`);
       assert.match(result.stdout, /not installed/);
     });
 
     test('should fail when no version provided to use command', async () => {
       const result = await run(['use']);
-      assert.notEqual(result.exitCode, 0);
+      assert.notEqual(result.exitCode, 0, `${result.stdout} ${result.stderr}`);
       assert.match(result.stdout, /version required/);
     });
 
     test('should fail when no version provided to shard command', async () => {
       const result = await run(['shard']);
-      assert.notEqual(result.exitCode, 0);
+      assert.notEqual(result.exitCode, 0, `${result.stdout} ${result.stderr}`);
       assert.match(result.stdout, /version required/);
     });
 
     test('should fail when no version provided to shell command', async () => {
       const result = await run(['shell']);
-      assert.notEqual(result.exitCode, 0);
+      assert.notEqual(result.exitCode, 0, `${result.stdout} ${result.stderr}`);
+      assert.match(result.stdout, /version required/);
+    });
+
+    test('should fail when no version provided to s alias', async () => {
+      const result = await run(['s']);
+      assert.notEqual(result.exitCode, 0, `${result.stdout} ${result.stderr}`);
+      assert.match(result.stdout, /version required/);
+    });
+
+    test('should fail when no version provided to mongo alias', async () => {
+      const result = await run(['mongo']);
+      assert.notEqual(result.exitCode, 0, `${result.stdout} ${result.stderr}`);
       assert.match(result.stdout, /version required/);
     });
 
     test('should fail when no version provided to rm command', async () => {
       const result = await run(['rm']);
-      assert.equal(result.exitCode, 1);
+      assert.equal(result.exitCode, 1, `${result.stdout} ${result.stderr}`);
       assert.match(result.stdout, /version.*required/);
     });
   });

@@ -147,6 +147,42 @@ Use or download a specific version of the Database Tools:
 $ m tools 100.9.4
 ```
 
+### Downloading MongoDB Shell
+
+The MongoDB Shell (mongosh) is released separately from the server. You can use `m` to manage your MongoDB Shell version independently of your MongoDB server and tools versions.
+
+List available MongoDB Shell versions:
+
+```bash
+$ m mongosh ls
+```
+
+List installed MongoDB Shell versions:
+
+```bash
+$ m mongosh installed
+```
+
+Use or download the latest stable release of the MongoDB Shell:
+
+```bash
+$ m mongosh stable
+```
+
+Use or download a specific version of the MongoDB Shell:
+
+```bash
+$ m mongosh 2.3.7
+```
+
+Remove previously installed MongoDB Shell versions:
+
+```bash
+$ m mongosh rm 2.3.0 2.3.5
+```
+
+**Note:** The `m shell <version> [args...]` command will first try to use the installed mongosh version, and fall back to the legacy `mongo` shell if mongosh is not installed.
+
 ### Removing Binaries
 
 Remove some previously installed versions:
@@ -258,12 +294,18 @@ Output from `m --help`:
     m tools stable               Install or activate the latest stable Database Tools release
     m tools X.Y.Z                Install or activate the Database Tools X.Y.Z
     m tools ls                   Output the versions of the Database Tools available
-    m tools installed [--json]   Output installed versions of the Database Tools available
+    m tools rm <version ...>     Remove the given Database Tools versions
+    m tools installed [--json]   Output the installed versions of the Database Tools
+    m mongosh stable             Install or activate the latest stable MongoDB Shell release
+    m mongosh X.Y.Z              Install or activate the MongoDB Shell X.Y.Z
+    m mongosh ls                 Output the versions of the MongoDB Shell available
+    m mongosh rm <version ...>   Remove the given MongoDB Shell versions
+    m mongosh installed [--json] Output the installed versions of the MongoDB Shell
 
   Events:
 
-    change   Occurs when switching MongoDB versions
-    install  Occurs when installing a previously uninstalled MongoDB version
+    change   Occurs when switching MongoDB server versions
+    install  Occurs when installing a previously uninstalled MongoDB server version
 
   Options:
 
