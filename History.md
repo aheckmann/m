@@ -1,3 +1,10 @@
+1.10.0 / 2025-10-30
+==================
+* feat: mongosh binary management via `m mongosh` subcommand
+* feat: tool removal via `m tools rm` subcommand
+* fix: inconsistent shell output in `ls`, `installed` commands
+* fix: inconsistent behavior between `m` and `m tools` commands when no version is passed
+
 1.9.8 / 2025-10-28
 ==================
 * fix: allow ubuntu 24 to fetch mongodb versions links provided for ubuntu 18 [#159](https://github.com/aheckmann/m/pull/159) (@genepix)

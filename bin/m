@@ -42,7 +42,7 @@ CACHE_SRC=${M_CACHE_SRC:-$M_DIR/cache-src.json}
 CACHE_EXPIRY=${M_CACHE_EXPIRY:-3600}
 
 # m version
-VERSION="1.9.8"
+VERSION="1.10.0"
 
 #
 # Log the given <msg ...>
