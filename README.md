@@ -154,28 +154,34 @@ The MongoDB Shell (mongosh) is released separately from the server. You can use 
 List available MongoDB Shell versions:
 
 ```bash
-$ m shell ls
+$ m mongosh ls
 ```
 
 List installed MongoDB Shell versions:
 
 ```bash
-$ m shell installed
+$ m mongosh installed
 ```
 
 Use or download the latest stable release of the MongoDB Shell:
 
 ```bash
-$ m shell stable
+$ m mongosh stable
 ```
 
 Use or download a specific version of the MongoDB Shell:
 
 ```bash
-$ m shell 2.3.7
+$ m mongosh 2.3.7
 ```
 
-**Note:** To execute the legacy `mongo` shell from a specific MongoDB server version, use `m s <version> [args...]` or `m mongo <version> [args...]` instead.
+Remove previously installed MongoDB Shell versions:
+
+```bash
+$ m mongosh rm 2.3.0 2.3.5
+```
+
+**Note:** The `m shell <version> [args...]` command will first try to use the installed mongosh version, and fall back to the legacy `mongo` shell if mongosh is not installed.
 
 ### Removing Binaries
 
@@ -268,7 +274,7 @@ Output from `m --help`:
     m <version> --legacy         Install generic Linux version (does not include SSL)
     m use <version> [args ...]   Execute mongod <version> with [args ...]
     m shard <version> [args ...] Execute mongos <version> with [args ...]
-    m s <version> [args ...]     Open a mongo shell <version> with [args ...]
+    m shell <version> [args ...] Open a mongo shell <version> with [args ...]
     m bin <version>              Output bin path for <version>
     m rm <version ...>           Remove the given version(s)
     m --stable                   Output the latest stable MongoDB version available
@@ -288,16 +294,18 @@ Output from `m --help`:
     m tools stable               Install or activate the latest stable Database Tools release
     m tools X.Y.Z                Install or activate the Database Tools X.Y.Z
     m tools ls                   Output the versions of the Database Tools available
-    m tools installed [--json]   Output installed versions of the Database Tools available
-    m shell stable               Install or activate the latest stable MongoDB Shell release
-    m shell X.Y.Z                Install or activate the MongoDB Shell X.Y.Z
-    m shell ls                   Output the versions of the MongoDB Shell available
-    m shell installed [--json]   Output installed versions of the MongoDB Shell available
+    m tools rm <version ...>     Remove the given Database Tools versions
+    m tools installed [--json]   Output the installed versions of the Database Tools
+    m mongosh stable             Install or activate the latest stable MongoDB Shell release
+    m mongosh X.Y.Z              Install or activate the MongoDB Shell X.Y.Z
+    m mongosh ls                 Output the versions of the MongoDB Shell available
+    m mongosh rm <version ...>   Remove the given MongoDB Shell versions
+    m mongosh installed [--json] Output the installed versions of the MongoDB Shell
 
   Events:
 
-    change   Occurs when switching MongoDB versions
-    install  Occurs when installing a previously uninstalled MongoDB version
+    change   Occurs when switching MongoDB server versions
+    install  Occurs when installing a previously uninstalled MongoDB server version
 
   Options:
 
@@ -308,7 +316,7 @@ Output from `m --help`:
 
     installed  lls
     shard      sd, mongos
-    mongo      s, sh
+    shell      s, sh, mongo
     list       ls, available, avail
     use        as, mongod
     which      bin
