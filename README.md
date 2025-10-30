@@ -5,23 +5,29 @@ and command-line tools.
 
 <img src="https://raw.githubusercontent.com/aheckmann/m/master/demo.gif" width="600px" alt="demo" />
 
-For an excellent deep dive about this project, check out the [DeepWiki](https://deepwiki.com/aheckmann/m) documentation.
+For an excellent deep dive about this project, check out the
+[DeepWiki](https://deepwiki.com/aheckmann/m) documentation.
 
 ## Prerequisites
 
-To install binary packages, `m` requires a 64-bit O/S which:
- - is a [Supported Platform for the version of MongoDB you are trying to install](https://docs.mongodb.com/manual/administration/production-notes/#supported-platforms)
- - includes the `bash` shell
+To install binary packages, `m` requires a 64-bit OS which:
+
+- is a
+  [Supported Platform for the version of MongoDB you are trying to install](https://docs.mongodb.com/manual/administration/production-notes/#supported-platforms)
+- includes the `bash` shell
 
 Environments that should work include:
- - Linux (RHEL/CentOS, Debian/Ubuntu, Amazon Linux)
- - macOS 10.14 (Mojave) and later
- - Windows 10 with [Ubuntu on Windows](https://www.microsoft.com/en-us/p/ubuntu/9nblggh4msv6?activetab=pivot%3Aoverviewtab)
- - Docker using a supported Linux distro
+
+- Linux (RHEL/CentOS, Debian/Ubuntu, Amazon Linux)
+- macOS 10.14 (Mojave) and later
+- Windows 10 with
+  [Ubuntu on Windows](https://www.microsoft.com/en-us/p/ubuntu/9nblggh4msv6?activetab=pivot%3Aoverviewtab)
+- Docker using a supported Linux distro
 
 ## Installation
 
-`m` is a `bash` script which can be installed & updated via `npm` for convenience:
+`m` is a `bash` script which can be installed & updated via `npm` for
+convenience:
 
 ```bash
 npm install -g m
@@ -43,15 +49,16 @@ wget https://raw.githubusercontent.com/aheckmann/m/master/bin/m && chmod +x ./m
 
 ### Downloading MongoDB Binaries
 
-
-To install or activate a previously installed version, run `m <version>`.
-For example:
+To install or activate a previously installed version, run `m <version>`. For
+example:
 
 ```bash
 $ m 7.0.14
 ```
 
-Afterwards, those binaries will become the default in your install path (typically `$HOME/.local/bin/`; see [Details](#details) below for more information).
+Afterwards, those binaries will become the default in your install path
+(typically `$HOME/.local/bin/`; see [Details](#details) below for more
+information).
 
 You can also specify a release series to download the latest available revision:
 
@@ -101,7 +108,8 @@ Download an Enterprise release:
 $ m 7.0-ent
 ```
 
-Select a MongoDB version without prompting for confirmation if a download is required:
+Select a MongoDB version without prompting for confirmation if a download is
+required:
 
 ```bash
 $ yes | m 7.0
@@ -110,7 +118,7 @@ $ yes | m 7.0
 #### Notes
 
 Where possible `m` will try to download the distro-specific binaries for your
-O/S and version. If a binary appears to be unavailable, `m` will ask if you want
+OS and version. If a binary appears to be unavailable, `m` will ask if you want
 to try building from source.
 
 [Building MongoDB from source](https://github.com/mongodb/mongo/wiki/Build-Mongodb-From-Source)
@@ -118,70 +126,6 @@ requires you to preinstall all of the relevant dependencies & toolchain to build
 the desired version of MongoDB. Installing those is outside the scope of what
 `m` does.
 
-
-### Downloading MongoDB Database Tools
-
-The Database Tools (mongodump, mongorestore, etc.) are released separately from the server. You can use `m` to manage your MongoDB Database Tools version independently of your MongoDB server and shell versions.
-
-List available Database Tools versions:
-
-```bash
-$ m tools ls
-```
-
-List installed Database Tools versions:
-
-```bash
-$ m tools installed
-```
-
-Use or download the latest stable release of the Database Tools:
-
-```bash
-$ m tools stable
-```
-
-Use or download a specific version of the Database Tools:
-
-```bash
-$ m tools 100.9.4
-```
-
-### Downloading MongoDB Shell
-
-The MongoDB Shell (mongosh) is released separately from the server. You can use `m` to manage your MongoDB Shell version independently of your MongoDB server and tools versions.
-
-List available MongoDB Shell versions:
-
-```bash
-$ m mongosh ls
-```
-
-List installed MongoDB Shell versions:
-
-```bash
-$ m mongosh installed
-```
-
-Use or download the latest stable release of the MongoDB Shell:
-
-```bash
-$ m mongosh stable
-```
-
-Use or download a specific version of the MongoDB Shell:
-
-```bash
-$ m mongosh 2.3.7
-```
-
-Remove previously installed MongoDB Shell versions:
-
-```bash
-$ m mongosh rm 2.3.0 2.3.5
-```
-
-**Note:** The `m shell <version> [args...]` command will first try to use the installed mongosh version, and fall back to the legacy `mongo` shell if mongosh is not installed.
 
 ### Removing Binaries
 
@@ -195,7 +139,8 @@ $  m rm 6.0.13 7.0.5
 
 Multiple versions of MongoDB can be downloaded and targeted directly.
 
-Ask `m` for the binary path for a specific version that has already been downloaded:
+Ask `m` for the binary path for a specific version that has already been
+downloaded:
 
 ```bash
 $ m bin 7.0.6
@@ -208,7 +153,8 @@ Start up `mongod` 6.0.13 regardless of the active version:
 $ m use 6.0.13 --port 29000 --dbpath ./data/
 ```
 
-When installing or changing the active version you might want to run custom scripts:
+When installing or changing the active version you might want to run custom
+scripts:
 
 ```bash
 $ m pre install /path/to/my/script
@@ -256,6 +202,76 @@ To remove all post install hooks:
 ```bash
 $ m post install rm
 ```
+
+### Downloading MongoDB Database Tools
+
+The Database Tools (mongodump, mongorestore, etc.) are released separately from
+the server. You can use `m` to manage your MongoDB Database Tools version
+independently of your MongoDB server and shell versions.
+
+List available Database Tools versions:
+
+```bash
+$ m tools ls
+```
+
+List installed Database Tools versions:
+
+```bash
+$ m tools installed
+```
+
+Use or download the latest stable release of the Database Tools:
+
+```bash
+$ m tools stable
+```
+
+Use or download a specific version of the Database Tools:
+
+```bash
+$ m tools 100.9.4
+```
+
+### Downloading MongoDB Shell
+
+The MongoDB Shell (mongosh) is released separately from the server. You can use
+`m` to manage your MongoDB Shell version independently of your MongoDB server
+and tools versions.
+
+List available MongoDB Shell versions:
+
+```bash
+$ m mongosh ls
+```
+
+List installed MongoDB Shell versions:
+
+```bash
+$ m mongosh installed
+```
+
+Use or download the latest stable release of the MongoDB Shell:
+
+```bash
+$ m mongosh stable
+```
+
+Use or download a specific version of the MongoDB Shell:
+
+```bash
+$ m mongosh 2.3.7
+```
+
+Remove previously installed MongoDB Shell versions:
+
+```bash
+$ m mongosh rm 2.3.0 2.3.5
+```
+
+**Note:** The `m shell <version> [args...]` command will first try to use the
+installed mongosh version, and fall back to the legacy `mongo` shell if mongosh
+is not installed.
 
 ## Usage
 
@@ -324,10 +340,13 @@ Output from `m --help`:
 
 ## Details
 
- By default `m` downloads MongoDB binaries to _~/.local/m/versions_ in subdirectories named after the release version (6.0.14, 7.0.6, ...). MongoDB Database Tools binaries are downloaded to _~/.local/m/tools/versions_ in subdirectories named after the release version (100.0.0, 100.0.1, ...). Activated MongoDB binaries are symlinked into the `bin` directory in _~/.local/bin_.  To alter where `m` operates, export the __M_PREFIX__ environment variable with your preferred path prefix.
+By default, `m` downloads and manages binaries in the `$HOME/.local/m` directory. To
+alter where `m` operates, export the **M_PREFIX** environment variable with your
+preferred path prefix.
 
-Previously downloaded versions of MongoDB can be activated using `m <version>` or
-selected using of the variations in the _Binary Usage_ section above.
+```bash
+M_PREFIX=/some/other/path m stable
+```
 
 ## License
 
@@ -339,4 +358,7 @@ Yes tj, this is nearly identical to [n](https://github.com/tj/n). Huge thanks!
 
 ## Disclaimer
 
-This software is not supported by MongoDB, Inc. under any of their commercial support subscriptions or otherwise. Any usage of `m` is at your own risk. Bug reports, feature suggestions, and questions can be posted in the [Issues](https://github.com/aheckmann/m/issues) section on GitHub.
+This software is not supported by MongoDB, Inc. under any of their commercial
+support subscriptions or otherwise. Any usage of `m` is at your own risk. Bug
+reports, feature suggestions, and questions can be posted in the
+[Issues](https://github.com/aheckmann/m/issues) section on GitHub.
