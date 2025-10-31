@@ -1653,11 +1653,11 @@ display_latest_stable_version() {
     if [[ ! -z "$version" ]]; then
       abort "Version [$version] does not match a stable MongoDB release series (X.Y)"
     else
+      # Return latest version without RC/beta/alpha suffix (production-ready releases)
       echo $all_versions \
-        | grep -E -o '[5-9]+\.0+\.[0-9]+\.zip' \
-        | grep -E -v "\d-\d" \
+        | grep -E -o '[0-9]\.[0-9]+\.[0-9]+' \
+        | grep -E -v "[0-9]+-[0-9]+" \
         | uniq \
-        | sed s/.zip$// \
         | sort -u -k 1,1n -k 2,2n -k 3,3n -t . \
         | tail -n1
       fi
