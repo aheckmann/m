@@ -1599,22 +1599,21 @@ display_latest_version() {
 
   get_all_versions
 
-  if [[ $version =~ ^[0-9]\.[0-9]+$ ]]; then
+  if [[ $version =~ ^[0-9]+\.[0-9]+$ ]]; then
     echo $all_versions \
-      | grep -Eo "version\":[[:space:]]*\"$version\.[0-9]+([-_\.]rc[0-9]+)?" \
+      | grep -Eo "version\":[[:space:]]*\"$version\.[0-9]+([-_\.]rc[0-9]+)?\"" \
       | sed 's/version\":[[:space:]]*\"//' \
-      | grep -Ev "\d-\d" \
+      | sed 's/"$//' \
       | sort -u -k 1,1n -k 2,2n -k 3,3n -t . \
-      | uniq \
       | tail -n1
   else
     if [[ ! -z "$version" ]]; then
       abort "Version [$version] does not match the MongoDB release series format (X.Y)"
     else
       echo $all_versions \
-        | grep -E -o '[0-9]\.[0-9]+\.[0-9]+([-_\.]rc[0-9]+)?' \
-        | grep -E -v "\d-\d" \
-        | uniq \
+        | grep -E -o 'version":[[:space:]]*"[0-9]+\.[0-9]+\.[0-9]+([-_\.](rc|alpha|beta)[0-9]*)?"' \
+        | sed 's/version":[[:space:]]*"//' \
+        | sed 's/"$//' \
         | sort -u -k 1,1n -k 2,2n -k 3,3n -t . \
         | tail -n1
     fi
@@ -1634,30 +1633,29 @@ display_latest_stable_version() {
   if [[ $version =~ ^[0-4]\.[0246]+$ ]]; then
     debug "Stable version < 5.0 ($version) is X.Y (Y is even)"
     echo $all_versions \
-      | grep -Eo "version\":[[:space:]]*\"($version\.[0-9]+)" \
+      | grep -Eo "version\":[[:space:]]*\"($version\.[0-9]+)\"" \
       | sed 's/version\":[[:space:]]*\"//' \
-      | grep -E -v "\d-\d" \
+      | sed 's/"$//' \
       | sort -u -k 1,1n -k 2,2n -k 3,3n -t . \
-      | uniq \
       | tail -n1
-  elif [[ $version =~ ^[5-9]\.0$ ]]; then
+  elif [[ $version =~ ^([5-9]|[1-9][0-9]+)\.0$ ]]; then
     debug "Stable version >= 5.0 ($version) is X.0"
     echo $all_versions \
-      | grep -Eo "version\":[[:space:]]*\"($version\.[0-9]+)" \
+      | grep -Eo "version\":[[:space:]]*\"($version\.[0-9]+)\"" \
       | sed 's/version\":[[:space:]]*\"//' \
-      | grep -E -v "\d-\d" \
+      | sed 's/"$//' \
       | sort -u -k 1,1n -k 2,2n -k 3,3n -t . \
-      | uniq \
       | tail -n1
   else
     if [[ ! -z "$version" ]]; then
       abort "Version [$version] does not match a stable MongoDB release series (X.Y)"
     else
+      # Return latest version without RC/beta/alpha suffix (production-ready releases)
       echo $all_versions \
-        | grep -E -o '[5-9]+\.0+\.[0-9]+\.zip' \
-        | grep -E -v "\d-\d" \
-        | uniq \
-        | sed s/.zip$// \
+        | grep -E -o 'version":[[:space:]]*"[0-9]+\.[0-9]+\.[0-9]+([-_\.](rc|alpha|beta)[0-9]*)?"' \
+        | sed 's/version":[[:space:]]*"//' \
+        | sed 's/"$//' \
+        | grep -E -v "(rc|alpha|beta)" \
         | sort -u -k 1,1n -k 2,2n -k 3,3n -t . \
         | tail -n1
       fi
