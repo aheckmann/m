@@ -1605,7 +1605,6 @@ display_latest_version() {
       | sed 's/version\":[[:space:]]*\"//' \
       | sed 's/"$//' \
       | sort -u -k 1,1n -k 2,2n -k 3,3n -t . \
-      | uniq \
       | tail -n1
   else
     if [[ ! -z "$version" ]]; then
@@ -1616,7 +1615,6 @@ display_latest_version() {
         | sed 's/version":[[:space:]]*"//' \
         | sed 's/"$//' \
         | sort -u -k 1,1n -k 2,2n -k 3,3n -t . \
-        | uniq \
         | tail -n1
     fi
   fi
@@ -1639,7 +1637,6 @@ display_latest_stable_version() {
       | sed 's/version\":[[:space:]]*\"//' \
       | sed 's/"$//' \
       | sort -u -k 1,1n -k 2,2n -k 3,3n -t . \
-      | uniq \
       | tail -n1
   elif [[ $version =~ ^([5-9]|[1-9][0-9]+)\.0$ ]]; then
     debug "Stable version >= 5.0 ($version) is X.0"
@@ -1648,7 +1645,6 @@ display_latest_stable_version() {
       | sed 's/version\":[[:space:]]*\"//' \
       | sed 's/"$//' \
       | sort -u -k 1,1n -k 2,2n -k 3,3n -t . \
-      | uniq \
       | tail -n1
   else
     if [[ ! -z "$version" ]]; then
@@ -1661,7 +1657,6 @@ display_latest_stable_version() {
         | sed 's/"$//' \
         | grep -E -v "(rc|alpha|beta)" \
         | sort -u -k 1,1n -k 2,2n -k 3,3n -t . \
-        | uniq \
         | tail -n1
       fi
   fi
